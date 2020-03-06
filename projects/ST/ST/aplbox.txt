@@ -1,0 +1,72 @@
+	std::array<std::function<void(variables &)>, Methods::N_eq> Methods::Splines = {
+		[](variables & X) -> void {},
+		[](variables & X) -> void { direct(X.nec, X,Neurons::necrotic_cells[0]); },
+		[](variables & X) -> void { direct(X.acu_c, X,Neurons::acute_changes[0]); },
+		[](variables & X) -> void { X.ap_s = 0; },
+		[](variables & X) -> void { X.ap_e = 0; },
+		[](variables & X) -> void { direct(X.hel, X, Neurons::intact_cells[0]); },
+
+		[](variables & X) -> void { direct(X.cy, X, Cytokines::cytokines[0]); },
+		[](variables & X) -> void { X.ch = 0; },
+		[](variables & X) -> void { X.adh = 0; },
+
+		[](variables & X) -> void { X.mia = 0; },
+		[](variables & X) -> void { X.mii = 0; },
+		[](variables & X) -> void { direct(X.lm, X, LeuMacrophags::macrophags[0]); },
+		[](variables & X) -> void { direct(X.ln, X, LeuNeutrophils::neutrophils[0]); }
+	};
+
+
+#define PRED(VAL) [](variables &pred_X, const variables &prev_X) -> void {VAL;}
+	std::array <std::function<void(variables &, const variables &)>, Methods::N_eq> Methods::PredCor::Predictions = {
+		PRED(0),
+
+		PRED(predictor(pred_X.nec, prev_X.nec, prev_X, Neurons::necrotic_cells[3])),
+		PRED(predictor(pred_X.acu_c, prev_X.acu_c, prev_X, Neurons::acute_changes[3])),
+		PRED(0), //PRED(predictor(pred_X.ap_s, prev_X.ap_s, prev_X, Neurons::apoptose_started[1])),
+		PRED(0), //PRED(predictor(pred_X.ap_e, prev_X.ap_e, prev_X, Neurons::apoptose_ended[1])),
+		PRED(predictor(pred_X.hel, prev_X.hel, prev_X, Neurons::intact_cells[3])),
+
+		PRED(predictor(pred_X.cy, prev_X.cy, prev_X, Cytokines::cytokines[2])),
+		PRED(0), //PRED(predictor(pred_X.ch, prev_X.ch, prev_X, Cytokines::chemokines[1])),
+		PRED(predictor(pred_X.adh, prev_X.adh, prev_X, Adhension::adhension[1])),
+
+		PRED(predictor(pred_X.mia, prev_X.mia, prev_X, Microglia::mi_active[1])),
+		PRED(predictor(pred_X.mii, prev_X.mii, prev_X, Microglia::mi_inactive[1])),
+		PRED(predictor(pred_X.lm, prev_X.lm, prev_X, LeuMacrophags::macrophags[2])),
+		PRED(predictor(pred_X.ln, prev_X.ln, prev_X, LeuNeutrophils::neutrophils[2]))
+	};
+#undef PRED
+
+#define COR(VAL) [](variables &cor_X, const  variables &prev_X, const variables &pred_X ) -> void {VAL;}
+	std::array <std::function<void(variables &, const variables &, const variables &)>, Methods::N_eq> Methods::PredCor::Corrections = {
+		COR(0),
+
+		COR(corrector(cor_X.nec, prev_X.nec, prev_X, pred_X, Neurons::necrotic_cells[3])),
+		COR(corrector(cor_X.acu_c, prev_X.acu_c, prev_X, pred_X, Neurons::acute_changes[3])),
+		COR(0), //COR(corrector(cor_X.ap_s, prev_X.ap_s, prev_X, pred_X, Neurons::apoptose_started[1])),
+		COR(0), //COR(corrector(cor_X.ap_e, prev_X.ap_e, prev_X, pred_X, Neurons::apoptose_ended[1])),
+		COR(corrector(cor_X.hel, prev_X.hel, prev_X, pred_X, Neurons::intact_cells[3])),
+
+		COR(corrector(cor_X.cy, prev_X.cy, prev_X, pred_X, Cytokines::cytokines[2])),
+		COR(0),	//COR(corrector(cor_X.ch, prev_X.ch, prev_X, pred_X, Cytokines::chemokines[1])),
+		COR(corrector(cor_X.adh, prev_X.adh, prev_X, pred_X, Adhension::adhension[1])),
+
+		COR(corrector(cor_X.mia, prev_X.mia, prev_X, pred_X, Microglia::mi_active[1])),
+		COR(corrector(cor_X.mii, prev_X.mii, prev_X, pred_X, Microglia::mi_inactive[1])),
+		COR(corrector(cor_X.lm, prev_X.lm, prev_X, pred_X, LeuMacrophags::macrophags[2])),
+		COR(corrector(cor_X.ln, prev_X.ln, prev_X, pred_X, LeuNeutrophils::neutrophils[2])),
+	};
+#undef COR
+
+	std::array<std::function<void(variables &)>, 6> Methods::SubValues = {
+		[](variables & X) -> void { direct(X.psy, X, Cytokines::GetPsy); },
+		[](variables & X) -> void { direct(X.eps, X, Phagocytosis::phagocytosis[0]); },
+		[](variables & X) -> void { direct(X.d_F, X, ToxDamage::full[2]); },
+		[](variables & X) -> void { direct(X.dp_A, X, ToxDamage::A_partial[0]); },
+		[](variables & X) -> void { direct(X.dp_N, X, ToxDamage::nec_partial[0]); },
+		[](variables & X) -> void { direct(X.d_ini, X, ToxDamage::initial[0]); }
+	};
+
+
+	======================================================================================================
