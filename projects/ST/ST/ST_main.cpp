@@ -1,111 +1,172 @@
-#include "libraries/Methods.h"
+#include <Realisation.h>
 
 using namespace StraightTask;
 
-void ODE_PredCor_solver(int32_t full_amount_of_days, size_t grid_spliting_amount)
+class INI_data {
+public:
+	INI_data() {}
+
+	INI_data(uint32_t N, double_t t_0, double_t tau, uint16_t Ns) :
+		m_N(N), m_t_0(t_0), m_tau(tau), m_Ns(Ns) {}
+
+	~INI_data() = default;
+
+	uint32_t m_N = 200; // СЂР°Р·РјРµСЂ СЃРµС‚РєРё РІ РёС‚РµСЂР°С†РёРё РјРµС‚РѕРґР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёСЏ (РњРџР)
+	double_t m_t_0 = 1; // РЅР°С‡Р°Р»СЊРЅС‹Р№ РјРѕРјРµРЅС‚ РІСЂРµРјРµРЅРё
+	double_t m_tau = 0; // РІРµР»РёС‡РёРЅР° С€Р°РіР° РњРџР
+	uint16_t m_Ns = 2; // С‡РёСЃР»Рѕ С€Р°РіРѕРІ РњРџР
+};
+
+// СЂРµС€Р°РµС‚ РґРёС„С„СѓСЂ РґР»СЏ РІС‹РІРѕРґР° СЂРµР·СѓР»СЊС‚Р°С‚Р°
+template<typename Method>
+void ODE_solver(ISolver<Method> & SYS, INI_data & IDT)
 {
+	//PhaseTrajOutput PTO("APPROX");
+	// Р·РґРµСЃСЊ РѕРїСЂРµРґРµР»СЏРµРј РїР°СЂР°РјРµС‚СЂС‹ С‡РёСЃР»РµРЅРЅРѕРіРѕ РјРµС‚РѕРґР°
+	SYS.ST.Set(IDT.m_t_0, IDT.m_N, IDT.m_tau, IDT.m_Ns);
 
-	Parameters STpar(full_amount_of_days, grid_spliting_amount); 
+	// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РЅР°РєРѕРїРёС‚РµР»СЊ Р·Р°РїР°Р·РґС‹РІР°СЋС‰РёС… Р°СЂРіСѓРјРµРЅС‚РѕРІ
+	for (auto const& cur : SYS.RetInitialiser) { cur(SYS.ST.N, SYS.ST.t_0, SYS.ST.gap_width); }
 
-	// вводим переменные векторы, содержащие всю необходимую информацию о численном решении на каждом шаге
-	// и определяем начальные условия
-	Methods::PredCor TLayers(STpar);  
-	
-	Methods STask;
-	// открываем потоки для вывода численного решения 
-	STask.AllocateOutputStream();
+	// Р·Р°РїРѕР»РЅСЏРµРј РјР°СЃСЃРёРІС‹ РёР· СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… СЂРµС€РµРЅРёР№ РЅР° СЃР»СѓС‡Р°Р№,
+	// РµСЃР»Рё РЅР°РґРѕ Р·Р°С„РёРєСЃРёСЂРѕРІР°С‚СЊ СЃРёСЃС‚РµРјСѓ РІРґРѕР»СЊ РЅРµРєРѕС‚РѕСЂРѕРіРѕ СЂРµС€РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚С‹ СЃРёСЃС‚РµРјС‹
+	//for (auto const& cur : SYS.DataCollector) { cur(); }
 
-	STask.CollectData("cy_a-spline.dat");
-	TLayers.X_init.cy = STask.data[1][0];
-
-	// выводим данные начальных условий во внешний файл
-	for (size_t i = 1; i < Methods::N_eq + 5; i++)	STask.Output[i](TLayers.X_init, 0);
+	// Рё РѕРїСЂРµРґРµР»СЏРµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ СѓСЃР»РѕРІРёСЏ РёР· РїСЂРµРґР·Р°РїРёСЃР°РЅРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ
+	//SYS.ST.t_0 = SYS.ST.X_init.tim = 0.5;
+	//for (auto const& cur : SYS.SolDataInitialiser) { cur(0, 0, SYS.ST.X_init); }
 
 
-	bool TRIG = true;
-	uint16_t days_remain = STpar.FAOD;
-	Methods::H = STpar.H;
+	// Рё РѕРїСЂРµРґРµР»СЏРµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ СѓСЃР»РѕРІРёСЏ
+	SYS.ST.X_init.tj = SYS.ST.t_0;
+	for (auto const& cur : SYS.IniDataInitialiser) { cur(SYS.ST.X_init); }
+	for (auto const& cur : SYS.IniRetInitialiser) { cur(SYS.ST.X_init); }
+	//for (auto const& cur : SYS.ExpressSubValues) { cur(SYS.ST.X_init); } // */
 
-	/*double_t* CFC[12] = {
-	&StraightTask::Neurons::k_N,
-	&StraightTask::Neurons::k_A,
-	&StraightTask::Neurons::p_R,
+	// РѕС‚РєСЂС‹РІР°РµРј РїРѕС‚РѕРєРё РґР»СЏ РІС‹РІРѕРґР° С‡РёСЃР»РµРЅРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ 
+	for (auto const& cur : SYS.OutStreamAllocator) { cur(); }
 
-	&StraightTask::ToxDamage::p_ncy,
-	&StraightTask::ToxDamage::C_Dcy,
-	&StraightTask::ToxDamage::C_DLn,
-	&StraightTask::ToxDamage::C_DLm,
-	&StraightTask::ToxDamage::P_nn,
-	&StraightTask::ToxDamage::p_Lm,
-	&StraightTask::ToxDamage::p_Ln,
-	&StraightTask::ToxDamage::D_0,
-	&StraightTask::ToxDamage::p_D
-	};*/
-	//Methods::setCoefs(CFC, 12, working_directory + "mstat/medX.txt");
-
-//	STask.CollectData("cy_a-spline.dat");
+	// РІС‹РІРѕРґРёРј РґР°РЅРЅС‹Рµ РЅР°С‡Р°Р»СЊРЅС‹С… СѓСЃР»РѕРІРёР№ РІРѕ РІРЅРµС€РЅРёР№ С„Р°Р№Р» СЃ СЂРµС€РµРЅРёРµРј
+	for (auto const& cur : SYS.SolutionOutputter) { cur(0, SYS.ST.X_init.tj, SYS.ST.X_init); }
 
 
-	while (TRIG)
+	uint16_t current_gap = 0;
+	double_t Tj;
+
+	while (current_gap < SYS.ST.full_amount_of_gaps)
 	{
-		std::cout << days_remain << " "; // вывод на экран "кол-во дней, которые надо просчитать"
-		TLayers.X_prev = TLayers.X_init; // даём начальное условие на предшествующий вектор
 
-		// цикл на следующие 24 часа
-		for (size_t Nj = 1; Nj <= STpar.N; Nj++)
+		std::cout << SYS.ST.full_amount_of_gaps - current_gap << " "; // РІС‹РІРѕРґ РЅР° СЌРєСЂР°РЅ "РєРѕР»-РІРѕ РїСЂРѕРјРµР¶СѓС‚РєРѕРІ, РєРѕС‚РѕСЂС‹Рµ РЅР°РґРѕ РїСЂРѕСЃС‡РёС‚Р°С‚СЊ"
+		SYS.ST.X_prev = SYS.ST.X_init; // РґР°С‘Рј РЅР°С‡Р°Р»СЊРЅРѕРµ СѓСЃР»РѕРІРёРµ РЅР° РїСЂРµРґС€РµСЃС‚РІСѓСЋС‰РёР№ РІРµРєС‚РѕСЂ
+		Tj = SYS.ST.X_pred.tj = SYS.ST.X_prev.tj;
+		uint32_t Nj = 1;
+
+		if (current_gap == 0) SYS.ApplyPrepStep(Nj, Tj);
+	
+		// С†РёРєР» РЅР° СЃР»РµРґСѓСЋС‰РёРµ 24 С‡Р°СЃР°
+		for (; Nj <= SYS.ST.N; Nj++)
 		{
-			// сдвиг на следующий шаг по времени
-			TLayers.X_pred.tim += STpar.H;
+			// СЃРґРІРёРі РЅР° СЃР»РµРґСѓСЋС‰РёР№ С€Р°Рі РїРѕ РІСЂРµРјРµРЅРё
+			Tj = SYS.ST.X_pred.tj += SYS.ST.H;
 
-			//назначаем соответствующие запаздывания
-			TLayers.X_pred.AllocCurRets(Nj, STpar.N);
+			//РЅР°Р·РЅР°С‡Р°РµРј СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ Р·Р°РїР°Р·РґС‹РІР°РЅРёСЏ
+			//for (auto const& cur : SYS.RetUploader) { cur(Nj, SYS.ST.X_pred); }
+			SYS.RetUpload(Nj);
 
-			// контролируем промежуток интерполяции
-			TLayers.X_pred.CheckShiftInterpGap(STpar);
-			TLayers.X_cor = TLayers.X_pred;
+			// РєРѕРЅС‚СЂРѕР»РёСЂСѓРµРј РїСЂРѕРјРµР¶СѓС‚РѕРє РёРЅС‚РµСЂРїРѕР»СЏС†РёРё
+			//ST.X_pred.CheckShiftInterpGap(STpar);
 
-			// определяем текущее значение цитокинов из данных внешнего файла
-			TLayers.X_cor.cy = STask.data[1][(Nj*16) + 24000 * (STpar.FAOD - days_remain)];
+			// РїСЂРµРґР·Р°РїРёСЃР°РЅРЅРѕРµ СЂРµС€РµРЅРёРµ
+			//for (auto const& cur : SYS.SolDataInitialiser) { cur(current_day, Nj, SYS.ST.X_pred); }			
 			
-			launchPredCor(TLayers);
+			//SYS.SolDataInitialiser[3](current_day, Nj, SYS.ST.X_pred); // С†РёС‚РѕРєРёРЅС‹
 
-			// вывод во внешние *.txt
-			for (size_t i = 1; i < Methods::N_eq + 5; i++) STask.Output[i](TLayers.X_cor, Nj);
+			SYS.ApplyMethod();
 
-			// сдвигаем запаздывания (если они есть, лол)
-			rets::ShiftRets(TLayers.X_prev, Nj);
+			//РІС‹РІРѕРґ, РєРѕРіРґР° РїСЂРµРґРёРєС‚РѕСЂ РёР»Рё РєРѕРЅСЃС‚Р°С‚Р°С†РёСЏ
+			for (auto const& cur : SYS.SolutionOutputter) { cur(Nj, Tj, *SYS.ST.X_sol); }
 
-			// обновляем предшествующий временной ряд для перехода на следующий шаг
-			TLayers.X_prev = TLayers.X_cor;
+			// РІС‹РІРѕРґ С„Р°Р·РѕРІРѕРіРѕ РїРѕСЂС‚СЂРµС‚Р° СЂРµС€РµРЅРёСЏ
+			//PTO.OutputPhaseTraj(Nj, Tj, { (*SYS.ST.X_sol).x, (*SYS.ST.X_sol).y, (*SYS.ST.X_sol).z });
+	
+			SYS.ErrSaving(Tj);
+			SYS.ErrOutput(Tj);
+	
+			//for (auto const& cur : SYS.BudgetOutputter) { cur(Nj, Tj); }
 
-		} // конец цикла рассчётов на текущий день for(Nj: 1->N)
+			// СЃРґРІРёРіР°РµРј Р·Р°РїР°Р·РґС‹РІР°РЅРёСЏ (РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ, Р»РѕР»)
+			SYS.RetDataUpdate(Nj);
 
-		days_remain--; std::cout << " ; ";
+			// РѕР±РЅРѕРІР»СЏРµРј РїСЂРµРґС€РµСЃС‚РІСѓСЋС‰РёР№ РІСЂРµРјРµРЅРЅРѕР№ СЂСЏРґ РґР»СЏ РїРµСЂРµС…РѕРґР° РЅР° СЃР»РµРґСѓСЋС‰РёР№ С€Р°Рі
+			SYS.NodeShift();
 
-		// Проверка, «а надо ли решать дальше?» 
-		if (days_remain == 0)
+
+		} // РєРѕРЅРµС† С†РёРєР»Р° СЂР°СЃСЃС‡С‘С‚РѕРІ РЅР° С‚РµРєСѓС‰РёР№ РґРµРЅСЊ for(Nj: 1->N)
+
+		current_gap++; std::cout << " ; ";
+
+		// РџСЂРѕРІРµСЂРєР°, В«Р° РЅР°РґРѕ Р»Рё СЂРµС€Р°С‚СЊ РґР°Р»СЊС€Рµ?В» 
+		if (current_gap == SYS.ST.full_amount_of_gaps)
 		{
 			std::cout << "\t\a Finita! \n\n All assigned days were rendered;\n";
-			TRIG = false; // условие на выход из цикла while
-			// else не нужен, ведь если !ID, то внешнее условие while его поймает
+			//TRIG = false; // СѓСЃР»РѕРІРёРµ РЅР° РІС‹С…РѕРґ РёР· С†РёРєР»Р° while
+			// else РЅРµ РЅСѓР¶РµРЅ, РІРµРґСЊ РµСЃР»Рё !ID, С‚Рѕ РІРЅРµС€РЅРµРµ СѓСЃР»РѕРІРёРµ while РµРіРѕ РїРѕР№РјР°РµС‚
 		}
-		else TLayers.X_init = TLayers.X_cor;
+		else
+		{
+			SYS.ST.X_init = *SYS.ST.X_sol;
+			// SYS.ST.X_init = SYS.ST.X_pred;
+			Nj = 1;
+		}
 	}
+
+
+	//SYS.TCOS.GetOrdOfMaxError();
+	//SYS.TSIN.GetOrdOfMaxError();
+	//SYS.T.GetOrdOfMaxError();
+
+	std::cout << std::endl;
+	/*std::cout << "( " << SYS.TCOS.Error[0] <<"\t" <<  SYS.TSIN.Error[0] << "\t" << SYS.T.Error[0] <<  " ) " << "\n"
+		<< SYS.TCOS.Error[1] + SYS.TSIN.Error[1] + SYS.T.Error[1] << std::endl;// */
+	std::cout << SYS.EXP.ErrorArray[SYS.EXP.GetOrdOfMaxError()][0] << "  " << SYS.EXP.ErrorArray[SYS.EXP.GetOrdOfMaxError()][1] << std::endl;
 }
+
+//СЂРµС€Р°РµС‚ РґРёС„С„СѓСЂ РґР»СЏ СЂР°СЃСЃС‡С‘С‚Р° РїРѕРіСЂРµС€РЅРѕСЃС‚Рё
+template<typename MTD>
+void ODE_solver(ISolver<MTD>);
+
+void SolutionOutput()
+{
+	Test::ThreeDim::Ox_ret X;
+	Test::ThreeDim::Oy_ret Y;
+	Test::ThreeDim::Oz_ret Z;
+
+	PhaseTrajOutput PTO("SOL");
+
+	uint16_t GA = 10;
+	uint32_t N = 2000;
+	double_t H = pi / N;
+
+	//std::ofstream sol(output_dir + "ST/SOL/PTraj/" + "SOL" + ".txt");
+	for (uint32_t i = 0; i < GA * N; i++){
+		PTO.OutputPhaseTraj(i, pi + i * H, { X.Solution(pi + i * H), Y.Solution(pi + i * H), Z.Solution(pi + i * H) });
+	}
+	//sol.close();
+	return;
+}
+
 
 
 int main()
 {
-	// зарание конфигурируем сплайны
-	// вне зависимости от того, нужны они в задаче или нет
-	Splines::ConfigureSplines();
 	
-	// отрисовываем построенные выше сплайны, если надо
-	//Splines::OutputSplines();
+	Euler SYS; INI_data IDT(200, pi, pi / 2.0, 10);
 
-	// вызываем решение диффура (2 дня, по 1500 шагов в сетке)
-	ODE_PredCor_solver(2,1500);
+	//SolutionOutput();
+	ODE_solver(SYS, IDT);
 
-	system("pause");
+
+	//system("pause");
+	
 	return EXIT_SUCCESS;
 }
