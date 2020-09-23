@@ -44,7 +44,7 @@ namespace StraightTask
 		virtual double_t Solution(double_t t) { return 0.0; }
 	};
 
-	template<typename argType>	class IEquation: public IRightPart<argType>{};
+	template<typename argType> class IEquation: public IRightPart<argType>{};
 
 
 	namespace Neurons
@@ -577,6 +577,8 @@ namespace StraightTask
 					return u.ret.x_1;
 				}
 			public:
+				double_t const ini_val = 1; // initial data for t_0 = 0;
+				const char* name = "RetExp";
 				double_t Solution(double_t t) noexcept final {
 					double_t value = 1;
 					for (size_t n = 1; n < floor(t); n++) {
@@ -591,6 +593,8 @@ namespace StraightTask
 					return u.x;
 				}
 			public:
+				double_t const ini_val = 1; // initial data for t_0 = 0;
+				const char* name = "Exp";
 				double_t Solution(double_t t) noexcept final { return exp(t); }
 			};	
 
@@ -599,6 +603,8 @@ namespace StraightTask
 					return -k * u.ret.x_pi2 ;
 				}
 			public:
+				double_t const ini_val = 0; // initial data for t_0 = pi;
+				const char* name = "RetSin";
 				double_t Solution(double_t t) noexcept final { return k * sin(t); }
 			};
 
@@ -613,6 +619,8 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t * cos(t); }
+				const double_t ini_val = -pi;
+				const char* name = "RetSp1";
 			};
 			class Oy_ret :public IEquation<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
@@ -620,6 +628,8 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t * sin(t); }
+				const double_t ini_val = 0;
+				const char* name = "RetSp2";
 			};
 			class Oz_ret :public IEquation<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
@@ -627,6 +637,8 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t; }
+				const double_t ini_val = pi;
+				const char* name = "RetSp3";
 			};
 
 			class Ox :public IEquation<variables const&> {
@@ -635,6 +647,8 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final{ return t * cos(t);	}
+				const double_t ini_val = -pi;
+				const char* name = "Sp1";
 			};
 			class Oy :public IEquation<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u) final {
@@ -642,6 +656,8 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t * sin(t); }
+				const double_t ini_val = 0;
+				const char* name = "Sp2";
 			};
 			class Oz :public IEquation<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u) final {
@@ -649,6 +665,8 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t; }
+				const double_t ini_val = pi;
+				const char* name = "Sp3";
 			};
 		}
 	}

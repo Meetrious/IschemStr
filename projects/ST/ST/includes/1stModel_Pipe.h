@@ -49,12 +49,6 @@ namespace StraightTask
 		Microglia::Active::M_ODE MIA;
 		Microglia::Inactive::M_ODE MII;
 
-		Test::OneDim::M_ODE EXP;
-
-		Test::ThreeDim::X_m_ODE TCOS;
-		Test::ThreeDim::Y_m_ODE TSIN;
-		Test::ThreeDim::Z_m_ODE T;
-
 
 		// subbordinate values relevant for a system 
 		ToxDamage::Full::M_Sub DF;
@@ -94,32 +88,23 @@ namespace StraightTask
 			[&](variables& X) -> bool { return LN.QueueRule(X.ln, X.tj, X.spl_gap_counter); }
 		};
 
-		std::array<std::function<void(variables&)>, 1> IniDataInitialiser = {
-			/*[&](variables& X) -> void {X.x = TCOS.GetInitialData(); },
-			[&](variables& X) -> void {X.y = TSIN.GetInitialData(); },
-			[&](variables& X) -> void {X.z = T.GetInitialData(); }// */
-
-			[&](variables& X) -> void {X.x = EXP.GetInitialData(); }
-
-			/*[&](variables & X) -> void {X.nec = NEC.GetInitialData(); },
-			[&](variables & X) -> void {X.acu_c = AC.GetInitialData(); },
-			[&](variables & X) -> void {X.hel = HEL.GetInitialData(); },
-			[&](variables & X) -> void {X.cy = CY.GetInitialData(); },
-			[&](variables & X) -> void {X.adh = ADH.GetInitialData(); },
-			[&](variables & X) -> void {X.lm = LM.GetInitialData(); },
-			[&](variables & X) -> void {X.ln = LN.GetInitialData(); },
-			[&](variables & X) -> void {X.mia = MIA.GetInitialData(); },
-			[&](variables & X) -> void {X.mii = MII.GetInitialData(); }// */
+		std::array<std::function<void(variables&)>, 9> IniDataInitialiser = {
+			[&](variables& X) -> void {X.nec = NEC.GetInitialData(); },
+			[&](variables& X) -> void {X.acu_c = AC.GetInitialData(); },
+			[&](variables& X) -> void {X.hel = HEL.GetInitialData(); },
+			[&](variables& X) -> void {X.cy = CY.GetInitialData(); },
+			[&](variables& X) -> void {X.adh = ADH.GetInitialData(); },
+			[&](variables& X) -> void {X.lm = LM.GetInitialData(); },
+			[&](variables& X) -> void {X.ln = LN.GetInitialData(); },
+			[&](variables& X) -> void {X.mia = MIA.GetInitialData(); },
+			[&](variables& X) -> void {X.mii = MII.GetInitialData(); }// 9шт */
 		};
 
-		std::array<std::function<void(variables&)>, 1> IniRetInitialiser = {
-			/*[&](variables& X) -> void {X.ret.x_pi2 = TCOS.GetRetValue(pi * 0.5, 0); },
-			[&](variables& X) -> void {X.ret.y_pi2 = TSIN.GetRetValue(pi * 0.5, 0); },
-			[&](variables& X) -> void {X.ret.z_pi2 = T.GetRetValue(pi * 0.5, 0); } // */
+		std::array<std::function<void(variables&)>, 3> IniRetInitialiser = {
+			[&](variables& X) -> void {X.ret.hel_12 = HEL.GetRetValue(12.0, 0); },
+			[&](variables& X) -> void {X.ret.adh_12 = ADH.GetRetValue(12.0, 0); },
+			[&](variables& X) -> void {X.ret.adh_4 = ADH.GetRetValue(4.0, 0); } // */
 
-			//[&](variables& X) -> void {X.ret.x_1 = EXP.GetRetValue(1.0, 0); }
-
-			[&](variables& X) -> void {X.ret.x_pi2 = EXP.GetRetValue(pi / 2, 0); }
 		};
 
 		std::array<std::function<void(uint16_t, uint32_t, uint32_t, variables&)>, 14> SolDataInitialiser = {
@@ -151,15 +136,8 @@ namespace StraightTask
 			[&](variables& X) -> void { X.eps_w = EPS_W.RP.Expression(X); }
 		};
 
-		std::array<std::function<void()>, 1> OutStreamAllocator = {
-			/*[&]() -> void {TCOS.AllocateOutputStreams(); },
-			[&]() -> void {TSIN.AllocateOutputStreams(); },
-			[&]() -> void {T.AllocateOutputStreams(); } // */
-
-
-			[&]() -> void {EXP.AllocateOutputStreams(); }
-
-			/*[&]() -> void {NEC.AllocateOutputStreams(); },
+		std::array<std::function<void()>, 14> OutStreamAllocator = {
+			[&]() -> void {NEC.AllocateOutputStreams(); },
 			[&]() -> void {AC.AllocateOutputStreams(); },
 			[&]() -> void {HEL.AllocateOutputStreams(); },
 
@@ -177,14 +155,9 @@ namespace StraightTask
 			[&]() -> void {EPS_W.AllocateOutputStreams(); }// 14шт */
 		};
 
-		std::array<std::function<void(uint32_t, double_t, variables&)>, 1> SolutionOutputter = {
-			/*[&](uint32_t Nj, double_t Tj, variables& X) -> void {TCOS.OutputSol(Nj, Tj, X.x); },
-			[&](uint32_t Nj, double_t Tj, variables& X) -> void {TSIN.OutputSol(Nj, Tj, X.x); },
-			[&](uint32_t Nj, double_t Tj, variables& X) -> void {T.OutputSol(Nj, Tj, X.x); }// */
+		std::array<std::function<void(uint32_t, double_t, variables&)>, 14> SolutionOutputter = {
 
-			[&](uint32_t Nj, double_t Tj, variables& X) -> void {EXP.OutputSol(Nj, Tj, X.x); }
-
-			/*[&](uint32_t Nj, double_t Tj, variables& X) -> void {NEC.OutputSol(Nj, Tj, X.nec); },
+			[&](uint32_t Nj, double_t Tj, variables& X) -> void {NEC.OutputSol(Nj, Tj, X.nec); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {AC.OutputSol(Nj, Tj, X.acu_c); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {HEL.OutputSol(Nj, Tj, X.hel); },
 
@@ -225,9 +198,8 @@ namespace StraightTask
 			//[&](uint32_t Nj, double_t Tj) -> void {eps_w.OutputBuds(Nj, Tj); }
 		};
 
-		std::array<std::function<void(uint32_t, variables&)>, 1> RetUploader = {
-			[&](uint32_t Nj, variables& X)->void { X.ret.x_1 = EXP.GetRetValue(1.0, Nj); }
-			/*[&](uint32_t Nj, variables & X)->void { X.ret.hel_12 = HEL.GetRetValue(12.0, Nj); },
+		std::array<std::function<void(uint32_t, variables&)>, 3> RetUploader = {
+			[&](uint32_t Nj, variables & X)->void { X.ret.hel_12 = HEL.GetRetValue(12.0, Nj); },
 			[&](uint32_t Nj, variables & X)->void { X.ret.adh_12 = ADH.GetRetValue(12.0, Nj); },
 			[&](uint32_t Nj, variables & X)->void { X.ret.adh_4 = ADH.GetRetValue(4.0, Nj); }// */
 		};
@@ -238,14 +210,8 @@ namespace StraightTask
 			[&](uint32_t Nj, variables& X) -> void { ADH.ShiftRets(Nj, X.adh); }
 		};
 
-		std::array<std::function<void(uint32_t, double_t, double_t)>, 1> RetInitialiser = {
-			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {EXP.SetInitialRet(N, t0, gapWidth); }
-
-			/*[&](uint32_t N, double_t t0, double_t gapWidth) -> void {TCOS.SetInitialRet(N, t0, gapWidth); },
-			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {TSIN.SetInitialRet(N, t0, gapWidth); },
-			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {T.SetInitialRet(N, t0, gapWidth); } // */
-
-			/*[&](uint32_t N, double_t t0, double_t gapWidth) -> void {ADH.SetInitialRet(N, t0, gapWidth); },
+		std::array<std::function<void(uint32_t, double_t, double_t)>, 3> RetInitialiser = {
+			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {ADH.SetInitialRet(N, t0, gapWidth); },
 			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {HEL.SetInitialRet(N, t0, gapWidth); },
 			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {DF.SetInitialRet(N, t0, gapWidth); }// */
 		};
@@ -260,53 +226,20 @@ namespace StraightTask
 		virtual void ApplyPrepStep(uint32_t& Nj, double_t& Tj) { return; };
 
 		void RetUpload(uint32_t Nj) {
-
-			//ST.X_pred.ret.x_pi2 = EXP.GetRetValue(1.0, Nj);
-
-			ST.X_pred.ret.x_pi2 = EXP.GetRetValue(pi / 2.0, Nj);
-
-			/*ST.X_pred.ret.x_pi2 = TCOS.GetRetValue(pi * 0.5, Nj);
-			ST.X_pred.ret.y_pi2 = TSIN.GetRetValue(pi * 0.5, Nj);
-			ST.X_pred.ret.z_pi2 = T.GetRetValue(pi * 0.5, Nj); //*/
-
-
-			/*X.ret.hel_12 = HEL.GetRetValue(12.0, Nj);
-			X.ret.adh_12 = ADH.GetRetValue(12.0, Nj);
-			X.ret.adh_4 = ADH.GetRetValue(4.0, Nj); }// */
+			ST.X_pred.ret.hel_12 = HEL.GetRetValue(12.0, Nj);
+			ST.X_pred.ret.adh_12 = ADH.GetRetValue(12.0, Nj);
+			ST.X_pred.ret.adh_4 = ADH.GetRetValue(4.0, Nj); // */
 		}
 
 		virtual void NodeShift() { ST.X_prev = *ST.X_sol; }
 
 		void RetDataUpdate(uint32_t Nj) {
-			EXP.ShiftRets(Nj, ST.X_prev.x);
-
-			/*TCOS.ShiftRets(Nj, ST.X_prev.x);
-			TSIN.ShiftRets(Nj, ST.X_prev.y);
-			T.ShiftRets(Nj, ST.X_prev.z);//*/
-
-			/* HEL.ShiftRets(Nj, X.hel);
-			DF.ShiftRets(Nj, X.d_F);
-			ADH.ShiftRets(Nj, X.adh);// */
+			HEL.ShiftRets(Nj, ST.X_prev.hel);
+			DF.ShiftRets(Nj, ST.X_prev.d_F);
+			ADH.ShiftRets(Nj, ST.X_prev.adh);// */
 		}
 
 		virtual void ApplyMethod() = 0;
-
-		void ErrSaving(double_t Tj) {
-			EXP.SaveError(Tj, IErr::GetDif(ST.X_sol->x, EXP.RP.Solution(Tj), 1));
-
-			/*TCOS.SaveError(Tj, IErr::GetDif(ST.X_prev.x, TCOS.RP.Solution(Tj), 1));
-			TSIN.SaveError(Tj, IErr::GetDif(ST.X_prev.y, TSIN.RP.Solution(Tj), 1));
-			T.SaveError(Tj, IErr::GetDif(ST.X_prev.z, T.RP.Solution(Tj), 1)); // */
-		}
-
-		void ErrOutput(double_t Tj) {
-			EXP.OutputError(Tj, IErr::GetDif(ST.X_sol->x, EXP.RP.Solution(Tj), 1));
-
-			/*TCOS.OutputError(Tj, IErr::GetDif(ST.X_prev.x, TCOS.RP.Solution(Tj), 1));
-			TSIN.OutputError(Tj, IErr::GetDif(ST.X_prev.y, TSIN.RP.Solution(Tj), 1));
-			T.OutputError(Tj, IErr::GetDif(ST.X_prev.z, T.RP.Solution(Tj), 1)); // */
-
-		}
 
 	private:
 		virtual void ApplyPrepMethod() { return; }
@@ -316,15 +249,8 @@ namespace StraightTask
 	class Euler : public ISolver<Methods::Euler> {
 	public:
 		Euler() { ST.X_sol = &ST.X_pred; }
-		void ApplyMethod() final
-		{
-			ST.X_pred.x = ST.Predictor(ST.X_prev.x, EXP.RP);
-
-			/*ST.X_pred.x = ST.Predictor(ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.Predictor(ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.Predictor(ST.X_prev.z, T.RP);// */
-
-			/*ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
+		void ApplyMethod() final {
+			ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
 
@@ -353,13 +279,7 @@ namespace StraightTask
 			ST.X_cor.tj = ST.X_pred.tj;
 			ST.X_cor.ret = ST.X_pred.ret;
 
-			ST.X_cor.x = ST.Corrector(ST.X_prev.x, EXP.RP);
-
-			/*ST.X_cor.x = ST.Corrector(ST.X_prev.x, TCOS.RP);
-			ST.X_cor.y = ST.Corrector(ST.X_prev.y, TSIN.RP);
-			ST.X_cor.z = ST.Corrector(ST.X_prev.z, T.RP);//*/
-
-			/*ST.X_cor.nec = ST.Corrector(ST.X_prev.nec, NEC.RP);
+			ST.X_cor.nec = ST.Corrector(ST.X_prev.nec, NEC.RP);
 			ST.X_cor.acu_c = ST.Corrector(ST.X_prev.acu_c, AC.RP);
 			ST.X_cor.hel = ST.Corrector(ST.X_prev.hel, HEL.RP);
 
@@ -372,19 +292,12 @@ namespace StraightTask
 			ST.X_cor.mia = ST.Corrector(ST.X_prev.mia, MIA.RP);
 			ST.X_cor.mii = ST.Corrector(ST.X_prev.mii, MII.RP);
 
-			ST.X_cor.ret = ST.X_pred.ret; // in case of emergency to update ret-values on X_cor, but what on earth for
-
 			for (auto const& cur : ExpressSubValues) { cur(ST.X_cor); }// */
 		}
 
 	private:
 		void ApplyEuler() {
-			ST.X_pred.x = ST.Predictor(ST.X_prev.x, EXP.RP);
-
-			/*ST.X_pred.x = ST.Predictor(ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.Predictor(ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.Predictor(ST.X_prev.z, T.RP); //*/
-			/*ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
+			ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
 
@@ -407,14 +320,8 @@ namespace StraightTask
 		void ApplyMethod() final
 		{
 			ST.X_sub = ST.X_prev;
-			ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, EXP.RP);
 
-			/*ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.Predictor(ST.X_sub.y, ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.Predictor(ST.X_sub.z, ST.X_prev.z, T.RP);// */
-
-
-			/*ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
+			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
@@ -466,25 +373,18 @@ namespace StraightTask
 			ST.X_cor.tj = ST.X_pred.tj;
 			ST.X_cor.ret = ST.X_pred.ret;
 
-			ST.X_cor.x = ST.Corrector(ST.X[1].x, ST.X[2].x, ST.X[3].x, ST.X_prev.x, EXP.RP);
+			ST.X_cor.nec = ST.Corrector(ST.X[1].nec, ST.X[2].nec, ST.X[3].nec, ST.X_prev.nec, NEC.RP);
+			ST.X_cor.acu_c = ST.Corrector(ST.X[1].acu_c, ST.X[2].acu_c, ST.X[3].acu_c, ST.X_prev.acu_c, AC.RP);
+			ST.X_cor.hel = ST.Corrector(ST.X[1].hel, ST.X[2].hel, ST.X[3].hel, ST.X_prev.hel, HEL.RP);
 
-			/*ST.X_cor.x = ST.Corrector(ST.X[1].x, ST.X[2].x, ST.X[3].x, ST.X_prev.x, TCOS.RP);
-			ST.X_cor.y = ST.Corrector(ST.X[1].y, ST.X[2].y, ST.X[3].y, ST.X_prev.y, TSIN.RP);
-			ST.X_cor.z = ST.Corrector(ST.X[1].z, ST.X[2].z, ST.X[3].z, ST.X_prev.z, T.RP);// */
+			ST.X_cor.cy = ST.Corrector(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
+			ST.X_cor.adh = ST.Corrector(ST.X[1].adh, ST.X[2].adh, ST.X[3].adh, ST.X_prev.adh, ADH.RP);
 
+			ST.X_cor.lm = ST.Corrector(ST.X[1].lm, ST.X[2].lm, ST.X[3].lm, ST.X_prev.lm, LM.RP);
+			ST.X_cor.ln = ST.Corrector(ST.X[1].ln, ST.X[2].ln, ST.X[3].ln, ST.X_prev.ln, LN.RP);
 
-			/*ST.X_cor.nec = ST.Corrector(ST.X_1.nec, ST.X_2.nec, ST.X_3.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_cor.acu_c = ST.Corrector(ST.X_1.acu_c, ST.X_2.acu_c, ST.X_3.acu_c, ST.X_prev.acu_c, AC.RP);
-			ST.X_cor.hel = ST.Corrector(ST.X_1.hel, ST.X_2.hel, ST.X_3.hel, ST.X_prev.hel, HEL.RP);
-
-			ST.X_cor.cy = ST.Corrector(ST.X_1.cy, ST.X_2.cy, ST.X_3.cy, ST.X_prev.cy, CY.RP);
-			ST.X_cor.adh = ST.Corrector(ST.X_1.adh, ST.X_2.adh, ST.X_3.adh, ST.X_prev.adh, ADH.RP);
-
-			ST.X_cor.lm = ST.Corrector(ST.X_1.lm, ST.X_2.lm, ST.X_3.lm, ST.X_prev.lm, LM.RP);
-			ST.X_cor.ln = ST.Corrector(ST.X_1.ln, ST.X_2.ln, ST.X_3.ln, ST.X_prev.ln, LN.RP);
-
-			ST.X_cor.mia = ST.Corrector(ST.X_1.mia, ST.X_2.mia, ST.X_3.mia, ST.X_prev.mia, MIA.RP);
-			ST.X_cor.mii = ST.Corrector(ST.X_1.mii, ST.X_2.mii, ST.X_3.mii, ST.X_prev.mii, MII.RP);
+			ST.X_cor.mia = ST.Corrector(ST.X[1].mia, ST.X[2].mia, ST.X[3].mia, ST.X_prev.mia, MIA.RP);
+			ST.X_cor.mii = ST.Corrector(ST.X[1].mii, ST.X[2].mii, ST.X[3].mii, ST.X_prev.mii, MII.RP);
 
 			ST.X_cor.ret = ST.X_pred.ret; // in case of emergency to update ret-values on X_cor, but what no earth for
 
@@ -497,42 +397,24 @@ namespace StraightTask
 		}
 
 	private:
-		void ApplyPred()
-		{
-			ST.X_pred.x = ST.GPred(ST.X[1].x, ST.X[2].x, ST.X[3].x, ST.X_prev.x, EXP.RP);
-
-			/*ST.X_pred.x = ST.EulPred(ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.EulPred(ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.EulPred(ST.X_prev.z, T.RP);// */
-
-
-
-			/*ST.X_pred.nec = ST.EulPred(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.EulPred(ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.EulPred(ST.X_prev.hel, HEL.RP);
-
-			ST.X_pred.cy = ST.EulPred(ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.EulPred(ST.X_prev.adh, ADH.RP);
-
-			ST.X_pred.lm = ST.EulPred(ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.EulPred(ST.X_prev.ln, LN.RP);
-
-			ST.X_pred.mia = ST.EulPred(ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.EulPred(ST.X_prev.mii, MII.RP);
+		void ApplyPred() {
+			ST.X_pred.nec = ST.GPred(ST.X[1].nec, ST.X[2].nec, ST.X[3].nec, ST.X_prev.nec, NEC.RP);
+			ST.X_pred.acu_c = ST.GPred(ST.X[1].acu_c, ST.X[2].acu_c, ST.X[3].acu_c, ST.X_prev.acu_c, AC.RP);
+			ST.X_pred.hel = ST.GPred(ST.X[1].hel, ST.X[2].hel, ST.X[3].hel, ST.X_prev.hel, HEL.RP);
+			ST.X_pred.cy = ST.GPred(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
+			ST.X_pred.adh = ST.GPred(ST.X[1].adh, ST.X[2].adh, ST.X[3].adh, ST.X_prev.adh, ADH.RP);
+			ST.X_pred.lm = ST.GPred(ST.X[1].lm, ST.X[2].lm, ST.X[3].lm, ST.X_prev.lm, LM.RP);
+			ST.X_pred.ln = ST.GPred(ST.X[1].ln, ST.X[2].ln, ST.X[3].ln, ST.X_prev.ln, LN.RP);
+			ST.X_pred.mia = ST.GPred(ST.X[1].mia, ST.X[2].mia, ST.X[3].mia, ST.X_prev.mia, MIA.RP);
+			ST.X_pred.mii = ST.GPred(ST.X[1].mii, ST.X[2].mii, ST.X[3].mii, ST.X_prev.mii, MII.RP);
 
 			for (auto const& cur : ExpressSubValues) { cur(ST.X_pred); }// */
 		}
 
-		void ApplyPrepMethod() final
-		{
+		void ApplyPrepMethod() final{
 			ST.X_sub = ST.X_prev;
-			ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, EXP.RP);
 
-			/*ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.Predictor(ST.X_sub.y, ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.Predictor(ST.X_sub.z, ST.X_prev.z, T.RP);// */
-
-			/*ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
+			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
@@ -576,15 +458,8 @@ namespace StraightTask
 			}
 		}
 
-		void ApplyMethod()
-		{
-			ST.X_pred.x = ST.A_Predictor(ST.X_prev.x, EXP.RP);
-
-			/*ST.X_pred.x = ST.A_Predictor(ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.A_Predictor(ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.A_Predictor(ST.X_prev.z, T.RP); // */
-
-			/*ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
+		void ApplyMethod() {
+			ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.A_Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.A_Predictor(ST.X_prev.hel, HEL.RP);
 
@@ -610,13 +485,7 @@ namespace StraightTask
 		{
 			ST.X_sub = ST.X_prev;
 
-			ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, EXP.RP);
-
-			/*ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.Predictor(ST.X_sub.y, ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.Predictor(ST.X_sub.z, ST.X_prev.z, T.RP);// */
-
-			/*ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
+			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
@@ -668,13 +537,7 @@ namespace StraightTask
 			ST.X_cor.tj = ST.X_pred.tj;
 			ST.X_cor.ret = ST.X_pred.ret;
 
-			ST.X_cor.x = ST.A_Corrector(ST.X_prev.x, EXP.RP);
-
-			/*ST.X_cor.x = ST.A_Corrector(ST.X_prev.x, TCOS.RP);
-			ST.X_cor.y = ST.A_Corrector(ST.X_prev.y, TSIN.RP);
-			ST.X_cor.z = ST.A_Corrector(ST.X_prev.z, T.RP); // */
-
-			/*ST.X_cor.nec = ST.A_Corrector(ST.X_prev.nec, NEC.RP);
+			ST.X_cor.nec = ST.A_Corrector(ST.X_prev.nec, NEC.RP);
 			ST.X_cor.acu_c = ST.A_Corrector(ST.X_prev.acu_c, AC.RP);
 			ST.X_cor.hel = ST.A_Corrector(ST.X_prev.hel, HEL.RP);
 
@@ -696,15 +559,8 @@ namespace StraightTask
 		}
 
 	private:
-		void ApplyAdams()
-		{
-			ST.X_pred.x = ST.A_Predictor(ST.X_prev.x, EXP.RP);
-
-			/*ST.X_pred.x = ST.A_Predictor(ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.A_Predictor(ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.A_Predictor(ST.X_prev.z, T.RP); // */
-
-			/*ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
+		void ApplyAdams() {
+			ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.A_Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.A_Predictor(ST.X_prev.hel, HEL.RP);
 
@@ -723,13 +579,8 @@ namespace StraightTask
 		void ApplyPrepMethod() final
 		{
 			ST.X_sub = ST.X_prev;
-			ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, EXP.RP);
 
-			/*ST.X_pred.x = ST.Predictor(ST.X_sub.x, ST.X_prev.x, TCOS.RP);
-			ST.X_pred.y = ST.Predictor(ST.X_sub.y, ST.X_prev.y, TSIN.RP);
-			ST.X_pred.z = ST.Predictor(ST.X_sub.z, ST.X_prev.z, T.RP);// */
-
-			/*ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
+			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
 			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
@@ -744,8 +595,111 @@ namespace StraightTask
 
 			for (auto const& cur : ExpressSubValues) { cur(ST.X_pred); }// */
 		}
-
-
-
 	};
+
+
+	//______________________________________________________________________________
+	//==============================================================================
+
+
+
+	// решает диффур для вывода результата
+	void ODE_solver()
+	{
+		// choosing num-method from StraightTask
+		Euler SYS;
+
+		//PhaseTrajOutput PTO("APPROX");
+		// здесь определяем параметры численного метода
+		SYS.ST.Set(0.5, 1500, 24, 4);
+
+		// Инициализируем накопитель запаздывающих аргументов
+		for (auto const& cur : SYS.RetInitialiser) { cur(SYS.ST.N, SYS.ST.t_0, SYS.ST.gap_width); }
+
+		// заполняем массивы из уже существующих решений на случай,
+		// если надо зафиксировать систему вдоль некоторого решения компоненты системы
+		//for (auto const& cur : SYS.DataCollector) { cur(); }
+
+		// и определяем начальные условия из предзаписанного решения
+		//SYS.ST.t_0 = SYS.ST.X_init.tim = 0.5;
+		//for (auto const& cur : SYS.SolDataInitialiser) { cur(0, 0, SYS.ST.X_init); }
+
+
+		// и определяем начальные условия
+		SYS.ST.X_init.tj = SYS.ST.t_0;
+		for (auto const& cur : SYS.IniDataInitialiser) { cur(SYS.ST.X_init); }
+		for (auto const& cur : SYS.IniRetInitialiser) { cur(SYS.ST.X_init); }
+		//for (auto const& cur : SYS.ExpressSubValues) { cur(SYS.ST.X_init); } // */
+
+		// открываем потоки для вывода численного решения 
+		for (auto const& cur : SYS.OutStreamAllocator) { cur(); }
+
+		// выводим данные начальных условий во внешний файл с решением
+		for (auto const& cur : SYS.SolutionOutputter) { cur(0, SYS.ST.X_init.tj, SYS.ST.X_init); }
+
+
+		uint16_t current_gap = 0;
+		double_t Tj;
+
+		while (current_gap < SYS.ST.full_amount_of_gaps)
+		{
+
+			std::cout << SYS.ST.full_amount_of_gaps - current_gap << " "; // вывод на экран "кол-во промежутков, которые надо просчитать"
+			SYS.ST.X_prev = SYS.ST.X_init; // даём начальное условие на предшествующий вектор
+			Tj = SYS.ST.X_pred.tj = SYS.ST.X_prev.tj;
+			uint32_t Nj = 1;
+
+			if (current_gap == 0) SYS.ApplyPrepStep(Nj, Tj); // 1st approximations for multistep-methods
+
+			// цикл на следующие 24 часа
+			for (; Nj <= SYS.ST.N; Nj++)
+			{
+				// сдвиг на следующий шаг по времени
+				Tj = SYS.ST.X_pred.tj += SYS.ST.H;
+
+				//назначаем соответствующие запаздывания
+				//for (auto const& cur : SYS.RetUploader) { cur(Nj, SYS.ST.X_pred); }
+				SYS.RetUpload(Nj);
+
+				// контролируем промежуток интерполяции
+				//ST.X_pred.CheckShiftInterpGap(STpar);
+
+				// предзаписанное решение
+				//for (auto const& cur : SYS.SolDataInitialiser) { cur(current_day, Nj, SYS.ST.X_pred); }			
+
+				//SYS.SolDataInitialiser[3](current_day, Nj, SYS.ST.X_pred); // цитокины
+
+				SYS.ApplyMethod();
+
+				//вывод, когда предиктор или констатация
+				for (auto const& cur : SYS.SolutionOutputter) { cur(Nj, Tj, *SYS.ST.X_sol); }
+
+				// вывод фазового портрета решения
+				//PTO.OutputPhaseTraj(Nj, Tj, { (*SYS.ST.X_sol).x, (*SYS.ST.X_sol).y, (*SYS.ST.X_sol).z });
+
+
+				//for (auto const& cur : SYS.BudgetOutputter) { cur(Nj, Tj); }
+
+				// сдвигаем запаздывания (если они есть, лол)
+				SYS.RetDataUpdate(Nj);
+
+				// обновляем предшествующий временной ряд для перехода на следующий шаг
+				SYS.NodeShift();
+
+
+			} // конец цикла рассчётов на текущий день for(Nj: 1->N)
+
+			current_gap++; std::cout << " ; ";
+
+			// Проверка, «а надо ли решать дальше?» 
+			if (current_gap == SYS.ST.full_amount_of_gaps)
+				std::cout << "\t\a Finita! \n\n All assigned days were rendered;\n";
+			else
+			{
+				SYS.ST.X_init = *SYS.ST.X_sol;
+				Nj = 1;
+			}
+		}
+	}
+
 }

@@ -1,6 +1,9 @@
 #pragma once
 #include <Methods.h>
 
+#define CURRENT_MODEL ThirdModel
+
+
 namespace StraightTask
 {
 
@@ -223,7 +226,7 @@ namespace StraightTask
 		matrix<double_t> PreSavedSolData; // 2-dim table for presaved solution
 
 		// a method that outputs directory of a *.txt file with presaved solution
-		const std::string presol_data_dir() { return input_dir + "PreservedSol/" + sol_name() + ".txt"; }
+		const std::string presol_data_dir() { return input_dir + "preserved_solution/" + sol_name() + ".txt"; }
 
 		// a method that outputs a name of a ODE_System member
 		virtual const char* sol_name() = 0;
@@ -322,13 +325,9 @@ namespace StraightTask
 			OutBudgetStream << std::endl;
 		}
 
-		
-
-		
-
 		double_t GetInitialData()
 		{
-			std::ifstream in(input_dir + "list of initials/PerVal/" + sol_name() + ".txt");
+			std::ifstream in(input_dir + "list of initials/per_value/" + sol_name() + ".txt");
 			if (!in)
 			{
 				std::cout
@@ -351,7 +350,7 @@ namespace StraightTask
 	{
 		namespace NecroticCells
 		{
-			class M_ODE : public ISysMember<ThirdModel>	{
+			class M_ODE : public ISysMember<CURRENT_MODEL>	{
 				const char* sol_name() final { return "Necr"; };
 				const char* ini_spl_name() final { return "necr4SPL"; };
 			public:
@@ -361,7 +360,7 @@ namespace StraightTask
 
 		namespace AcuteChanges
 		{
-			class M_ODE : public ISysMember<ThirdModel>	{
+			class M_ODE : public ISysMember<CURRENT_MODEL>	{
 				const char* sol_name() final { return "Ac_ch"; };
 				const char* ini_spl_name() final { return "apop4SPL"; }
 			public:
@@ -388,7 +387,7 @@ namespace StraightTask
 
 		namespace IntactCells
 		{
-			class M_ODE : public ISysMember<ThirdModel>{
+			class M_ODE : public ISysMember<CURRENT_MODEL>{
 				const char* sol_name() final { return "Healt"; };
 				const char* ini_spl_name() final { return "hel4SPL"; }
 			public:
@@ -401,7 +400,7 @@ namespace StraightTask
 	{
 		namespace Pro_Inflam
 		{
-			class M_ODE : public ISysMember<ThirdModel>{
+			class M_ODE : public ISysMember<CURRENT_MODEL>{
 				const char* sol_name() final { return "Cy"; };
 				const char* ini_spl_name() final { return "cyto4SPL"; }
 			public:
@@ -419,7 +418,7 @@ namespace StraightTask
 
 	namespace LeuMacrophags
 	{
-		class M_ODE : public ISysMember<ThirdModel>{
+		class M_ODE : public ISysMember<CURRENT_MODEL>{
 			const char* sol_name() final { return "Lm"; };
 			const char* ini_spl_name() final { return "lm4SPL"; }
 		public:
@@ -429,7 +428,7 @@ namespace StraightTask
 
 	namespace LeuNeutrophils
 	{
-		class M_ODE : public ISysMember<ThirdModel>		{
+		class M_ODE : public ISysMember<CURRENT_MODEL>{
 			const char* sol_name() final { return "Ln"; };
 			const char* ini_spl_name() final { return "ln4SPL"; }
 		public:
@@ -441,13 +440,13 @@ namespace StraightTask
 	{
 		namespace Active
 		{
-			class M_ODE : public ISysMember<ThirdModel>{
+			class M_ODE : public ISysMember<CURRENT_MODEL>{
 				const char* sol_name() final { return "Mi_active"; };
 			};
 		}
 		namespace Inactive
 		{
-			class M_ODE : public ISysMember<ThirdModel>	{
+			class M_ODE : public ISysMember<CURRENT_MODEL>	{
 				const char* sol_name() final { return "Mi_inactive"; };
 			};
 		}
@@ -460,7 +459,7 @@ namespace StraightTask
 	{
 		namespace Full
 		{
-			class M_Sub : public ISubMember<ThirdModel>
+			class M_Sub : public ISubMember<CURRENT_MODEL>
 			{
 			public:
 				const char* sol_name() final { return "D_Full"; }
@@ -469,7 +468,7 @@ namespace StraightTask
 		}
 		namespace Nec_partial
 		{
-			class M_Sub : public ISubMember<ThirdModel>
+			class M_Sub : public ISubMember<CURRENT_MODEL>
 			{
 			public:
 				const char* sol_name() final { return "DN_c"; }
@@ -477,7 +476,7 @@ namespace StraightTask
 		}
 		namespace Apop_partial
 		{
-			class M_Sub : public ISubMember<ThirdModel>
+			class M_Sub : public ISubMember<CURRENT_MODEL>
 			{
 			public:
 				const char* sol_name() final { return "DA_c"; }
@@ -512,10 +511,12 @@ namespace StraightTask
 	namespace Test
 	{
 		namespace OneDim {
-			class M_ODE : public ISysMember<Sin>{
+			class M_ODE : public ISysMember<Exp>{
 			public:
 
-				const char* sol_name() { return "Ox1"; }
+				const char* sol_name()final { return RP.name; }
+				
+				double_t GetInitialData() { return RP.ini_val; }
 
 				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
 					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
@@ -529,8 +530,9 @@ namespace StraightTask
 		namespace ThreeDim
 		{
 			class X_m_ODE : public ISysMember<Ox_ret> {
-				const char* sol_name() { return "Ox"; }
+				const char* sol_name()final { return RP.name; }
 			public:
+				double_t GetInitialData() { return RP.ini_val; }
 				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
 					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
 					data.clear();
@@ -538,7 +540,7 @@ namespace StraightTask
 				}
 			};
 			class Y_m_ODE : public ISysMember<Oy_ret> {
-				const char* sol_name() { return "Oy"; }
+				const char* sol_name()final { return RP.name; }
 			public:
 				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
 					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
@@ -547,7 +549,7 @@ namespace StraightTask
 				}
 			};
 			class Z_m_ODE : public ISysMember<Oz_ret> {
-				const char* sol_name() { return "Oz"; }
+				const char* sol_name()final { return RP.name; }
 			public:
 				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
 					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
@@ -558,3 +560,7 @@ namespace StraightTask
 		}
 	}
 }
+
+#undef ORGL
+#undef SCND
+#undef THRD
