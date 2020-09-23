@@ -1,4 +1,4 @@
-//выбираем задачу, которую будем решать
+//ГўГ»ГЎГЁГ°Г ГҐГ¬ Г§Г Г¤Г Г·Гі, ГЄГ®ГІГ®Г°ГіГѕ ГЎГіГ¤ГҐГ¬ Г°ГҐГёГ ГІГј
 #include <Test1D_Pipe.h>
 
 using namespace StraightTask;
@@ -10,7 +10,7 @@ int main()
 {
 	//SolutionOutput();
 	
-	//calling for calculatings
+	//calling for calculations
 	ODE_solver();
 
 	system("pause");
