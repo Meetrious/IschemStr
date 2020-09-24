@@ -1,8 +1,7 @@
 # Ischemic-Stroke-Inflammation-Model-Solver
 Репозиторий содержит реализации алгоритмов для работы над математической моделью процессов при острой фазе воспаления при ишемическом инсульте.
 Ссылка на исследование и наработки: 
-https://www.overleaf.com/read/mtxqqwygypgp
-https://www.overleaf.com/read/fygdbgkzgxtz
+https://www.overleaf.com/read/mtxqqwygypgp , https://www.overleaf.com/read/fygdbgkzgxtz
 
 Мат. модель представляет из себя систему ОДУ с запаздываниями(или без). Уравнения системы описаны в Projects/ST/includes/base/Equations.h.
 
