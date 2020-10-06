@@ -1,35 +1,10 @@
 #pragma once
-#include <functional>	// поддержка полиморфных обёрток функций
-#include <Settings.h>
+#include <functional>
+#include <array>
+#include <tests/settings.h>
 
 namespace StraightTask
 {
-	class PhaseTrajOutput
-	{
-	public:
-		std::ofstream str;
-		PhaseTrajOutput(const char* name) { AllocateOutputStream(name); }
-
-		void AllocateOutputStream(const char* name)
-		{
-			str.open(output_dir + "ST/SOL/PTraj/" + name + ".txt");
-			if (!str)
-			{
-				std::cout << "\n For some reason budgets output stream for <" << name << "> wasn't allocated \n";
-				getchar();
-				return;
-			}
-		}
-		void OutputPhaseTraj(uint32_t Nj, double_t Tj, vector<double_t> Vals) {
-			str << Nj << "\t\t\t" << std::setprecision(5) << Tj << "\t\t\t" << std::setprecision(15);
-			for (auto const& cur : Vals)
-				str << cur << "\t\t\t";
-			str << std::endl;
-		}
-
-		~PhaseTrajOutput() { if (str.is_open()) str.close(); }
-	};
-
 	class IAggregate
 	{
 	public:
@@ -43,7 +18,7 @@ namespace StraightTask
 		};
 
 		std::array<std::function<void(variables&)>, 1> IniRetInitialiser = {
-			[&](variables& X) -> void {X.ret.x_pi2 = EXP.GetRetValue(pi / 2, 0); }
+			[&](variables& X) -> void {X.ret.x_1 = EXP.GetRetValue(1.0, 0); }
 		};
 
 
@@ -62,7 +37,7 @@ namespace StraightTask
 
 
 		std::array<std::function<void(uint32_t, double_t, double_t)>, 1> RetInitialiser = {
-			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {EXP.SetInitialRet(N, t0, gapWidth); }
+			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {EXP.StateRetArray(N, t0, gapWidth); }
 		};
 
 	};
@@ -74,7 +49,9 @@ namespace StraightTask
 
 		virtual void ApplyPrepStep(uint32_t& Nj, double_t& Tj) { return; };
 
-		void IniDataInitialise(){
+		bool is_SYS_deflecting() { return EXP.RP.ret_is; }
+
+		void InitialiseIniData() throw(const char*) {
 			vector<double_t> T0s;
 			for (auto const& cur : IniDataInitialiser){
 				cur(ST.X_init); T0s.emplace_back(ST.X_init.tj);
@@ -86,21 +63,65 @@ namespace StraightTask
 			mean = mean / T0s.size(); ST.X_init.tj = mean;
 
 			bool trg = false;
+
+			// making sure, that each initial data is set in the same t0 
 			for (size_t i = 0; i < T0s.size(); i++) {
 				if (mean == T0s[i])
 					continue;
 				else trg = true;
 			}
-			if (trg) std::cout << "\n WARNING: initial data for the equation system is not consistent:"
-				<< "\n initial time moments are not the same. "
-				<< "\n t_0 will be defined as mean."
-				<< "\n Do you wish to proceed? :\n  0. NO; \n 1. YES;";
-			std::cin >> trg;
-			// clarify the exception!!!!!!
+			if (trg)
+			{
+				std::cerr << "\n WARNING: initial data for the ODE system is not consistent:"
+					<< "\n initial time moments are not the same: \n {_";
+				for (auto const& cur : T0s) std::cerr << cur << '_';
+				std::cerr << "} \n t_0 will be defined as mean."
+					<< "\n Do you wish to proceed? :\n  0. NO; \n 1. YES;" << std::endl;
+				std::cin >> trg; 
+				if (!trg) throw(" Initial data is inacceptable. ");
+				else std::cerr << "Approved \n Proceeding. \n";
+			}
+			return;
 		}
 
+		void PrepairTheTask()
+		{
+			try {
+				SYS.InitialiseIniData();
+
+				// collecting presolved solution to freeze the system relatively given behaviour
+				// for (auto const& cur : DataCollector) { cur(); } // full
+
+				// setting initial data from presolved_solution_data
+				// for (auto const& cur : SolDataGetter) { cur(0, 0, SYS.ST.X_init); } // full
+
+				if (is_SYS_deflecting())
+				{
+					// initialise ret-value storage
+					for (auto const& cur : RetInitialiser) { cur(ST.N, ST.t_0, ST.gap_width); }
+
+					// setting first ret-values required on the first step of calculation
+					for (auto const& cur : IniRetInitialiser) { cur(ST.X_init); }
+				}
+
+				// streams for output
+				for (auto const& cur : OutStreamAllocator) { cur(); }
+
+				// outputting initial solution data
+				for (auto const& cur : SolutionOutputter) { cur(0, ST.X_init.tj, ST.X_init); }
+			}
+			catch (const char* exception) {
+				std::cerr << "WARNING:" << exception << "\n Terminating.";
+				throw(exception);
+			}
+
+		}
+
+
+		
+
 		void RetUpload(uint32_t Nj) {
-			ST.X_pred.ret.x_pi2 = EXP.GetRetValue(pi / 2.0, Nj);
+			ST.X_pred.ret.x_1 = EXP.GetRetValue(ST.gap_width, Nj);
 		}
 
 		virtual void NodeShift() { ST.X_prev = *ST.X_sol; }
@@ -320,84 +341,6 @@ namespace StraightTask
 //______________________________________________________________________________
 //==============================================================================
 
-	// решает диффур для вывода результата
-	void ODE_solver()
-	{
-		// choosing num-method from StraightTask
-		Euler SYS;
-
-		// здесь определяем параметры численного метода
-		SYS.ST.Set(200, pi/2.0, 5);
-
-		// initialise ini-data
-		SYS.IniDataInitialise();
-
-
-		// Инициализируем накопитель запаздывающих аргументов
-		for (auto const& cur : SYS.RetInitialiser) { cur(SYS.ST.N, SYS.ST.t_0, SYS.ST.gap_width); }
-
-		for (auto const& cur : SYS.IniRetInitialiser) { cur(SYS.ST.X_init); }
-		
-		// открываем потоки для вывода численного решения 
-		for (auto const& cur : SYS.OutStreamAllocator) { cur(); }
-
-		// выводим данные начальных условий во внешний файл с решением
-		for (auto const& cur : SYS.SolutionOutputter) { cur(0, SYS.ST.X_init.tj, SYS.ST.X_init); }
-
-
-		uint16_t current_gap = 0;
-		double_t Tj;
-
-		while (current_gap < SYS.ST.full_amount_of_gaps)
-		{
-
-			std::cout << SYS.ST.full_amount_of_gaps - current_gap << " "; // вывод на экран "кол-во промежутков, которые надо просчитать"
-			SYS.ST.X_prev = SYS.ST.X_init; // даём начальное условие на предшествующий вектор
-			Tj = SYS.ST.X_pred.tj = SYS.ST.X_prev.tj;
-			uint32_t Nj = 1;
-
-			if (current_gap == 0) SYS.ApplyPrepStep(Nj, Tj); // 1st approximations for multistep-methods
-
-			// цикл на следующие 24 часа
-			for (; Nj <= SYS.ST.N; Nj++)
-			{
-				// сдвиг на следующий шаг по времени
-				Tj = SYS.ST.X_pred.tj += SYS.ST.H;
-
-				//назначаем соответствующие запаздывания
-				SYS.RetUpload(Nj);
-
-				SYS.ApplyMethod();
-
-				//вывод, когда предиктор или констатация
-				for (auto const& cur : SYS.SolutionOutputter) { cur(Nj, Tj, *SYS.ST.X_sol); }
-
-				//SYS.ErrSaving(Tj); // сохранение локальной ошибки в массив
-				//SYS.ErrOutput(Tj); // вывод локальной ошибки во внешний файл
-
-				// updating in array from X_prev 
-				SYS.RetDataUpdate(Nj);
-
-				// updating X_prev for the next step
-				SYS.NodeShift();
-
-
-			} // конец цикла рассчётов на текущий день for(Nj: 1->N)
-
-			current_gap++; std::cout << " ; ";
-
-			// Проверка, «а надо ли решать дальше?» 
-			if (current_gap == SYS.ST.full_amount_of_gaps)
-				std::cout << "\t\a Finita! \n\n All assigned days were rendered;\n";
-			else{
-				SYS.ST.X_init = *SYS.ST.X_sol;
-				Nj = 1;
-			}
-		}
-
-		//std::cout << std::endl;
-		/*std::cout << "( " << SYS.TCOS.Error[0] <<"\t" <<  SYS.TSIN.Error[0] << "\t" << SYS.T.Error[0] <<  " ) " << "\n"
-			<< SYS.TCOS.Error[1] + SYS.TSIN.Error[1] + SYS.T.Error[1] << std::endl;// */
-			//std::cout << SYS.EXP.ErrorArray[SYS.EXP.GetOrdOfMaxError()][0] << "  " << SYS.EXP.ErrorArray[SYS.EXP.GetOrdOfMaxError()][1] << std::endl;
-	}
 }
+
+#include <base/Solver.h>

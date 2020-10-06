@@ -1,5 +1,5 @@
 #pragma once
-#include <ISCHEM_variables.h>
+#include <base/ISCHEM_variables.h>
 
 double_t pi = 3.14159265358979323;
 
@@ -593,7 +593,7 @@ namespace StraightTask
 					return u.x;
 				}
 			public:
-				double_t const ini_val = 1; // initial data for t_0 = 0;
+				double_t ini_data[2] = {0,1}; // initial data for t_0 = 0;
 				const char* name = "Exp";
 				double_t Solution(double_t t) noexcept final { return exp(t); }
 			};	
@@ -603,7 +603,7 @@ namespace StraightTask
 					return -k * u.ret.x_pi2 ;
 				}
 			public:
-				double_t const ini_val = 0; // initial data for t_0 = pi;
+				double_t ini_data[2] = { pi, 0 }; // initial data for t_0 = pi;
 				const char* name = "RetSin";
 				double_t Solution(double_t t) noexcept final { return k * sin(t); }
 			};
@@ -619,7 +619,7 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t * cos(t); }
-				const double_t ini_val = -pi;
+				const double_t ini_data[2] = { pi,-pi };
 				const char* name = "RetSp1";
 			};
 			class Oy_ret :public IEquation<variables const&> {
@@ -628,7 +628,7 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t * sin(t); }
-				const double_t ini_val = 0;
+				const double_t ini_data[2] = { pi, 0 };
 				const char* name = "RetSp2";
 			};
 			class Oz_ret :public IEquation<variables const&> {
@@ -637,7 +637,7 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t; }
-				const double_t ini_val = pi;
+				const double_t ini_data[2] = { pi, pi };
 				const char* name = "RetSp3";
 			};
 
@@ -647,7 +647,7 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final{ return t * cos(t);	}
-				const double_t ini_val = -pi;
+				const double_t ini_data[2] = { pi,-pi };
 				const char* name = "Sp1";
 			};
 			class Oy :public IEquation<variables const&> {
@@ -656,7 +656,7 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t * sin(t); }
-				const double_t ini_val = 0;
+				const double_t ini_data[2] = { pi,0 };
 				const char* name = "Sp2";
 			};
 			class Oz :public IEquation<variables const&> {
@@ -665,7 +665,7 @@ namespace StraightTask
 				}
 			public:
 				double_t Solution(double_t t)noexcept final { return t; }
-				const double_t ini_val = pi;
+				const double_t ini_data[2] = { pi, pi };
 				const char* name = "Sp3";
 			};
 		}

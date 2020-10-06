@@ -1,15 +1,20 @@
 #pragma once
-#include <Equations.h>
+
+#include <string>
+#include <fstream>
+#include <iostream>
+
 
 namespace StraightTask
 {
+
 	namespace Methods
 	{
 		class Parameters
 		{
 		public:
 
-			double_t t_0 = 0; // initial time moment
+			double_t t_0; // initial time moment
 			double_t H; // grid step in calc-scheme
 			uint32_t N; // amount of nods in a grid
 			double_t gap_width;
@@ -24,34 +29,50 @@ namespace StraightTask
 
 			void Sync(Parameters& method) { method = *this; }
 
-			void Set(double_t T0, uint32_t N, double_t GapWidth, uint16_t full_amount_of_gaps){
-				this->t_0 = T0; this->N = N; this->gap_width = GapWidth; this->full_amount_of_gaps = full_amount_of_gaps;
+			void Set(uint32_t N, double_t GapWidth, uint16_t full_amount_of_gaps){
+				this->N = N; this->gap_width = GapWidth; this->full_amount_of_gaps = full_amount_of_gaps;
 				this->H = gap_width / N;
 			}
 
-			// метод для изменения значений коэффициентов в уравнениях
-			static void SetCoefs(double_t* CoeficientsForChange[], uint16_t CFC_cap, std::string way){
-				std::vector<double> inCoefsVals; double_t tmp;
+			// the method that defines declared variables in pointer-array by values provided in file from <way> directory
+			static void SetCoefs(double_t* CoeficientsToVary[], uint16_t CFV_cap, std::string way){
+				vector<double> inCoefsVals; double_t tmp;
 				std::ifstream in(way);
 				while (!in.eof())
 				{
 					in >> tmp;
 					inCoefsVals.emplace_back(tmp);
 				}
-				if (inCoefsVals.size() != CFC_cap)
-				{
-					std::cout << "\n stop this MADNES RIGHT HERE, criminal scum!, or I'm throwing the exception!";
-					for (size_t i = 0; i < CFC_cap; i++)
-						*CoeficientsForChange[i] = 0;
-					return;
+				in.close();
+				
+				if (inCoefsVals.size() != CFV_cap) {
+					bool trg;
+					std::cerr << "\n Amount of incoming values is not equal to amount of declared variables to vary. \n";
+					std::cout << "\n Coeficients will be defined by first values obtained from the file, and zeros, if declared amount is greater.";
+					std::cout << "\n Do you wish to terminate the process? \n 0. NO; \n 1. YES; \n ans: ";
+					std::cin >> trg;
+					if (trg)
+					{
+						in.close();
+						throw ("Amount of incoming values is not equal to amount of declared variables to vary.");
+					}
 				}
-				for (size_t i = 0; i < CFC_cap; i++)
-					*CoeficientsForChange[i] = inCoefsVals[i];
+				if (inCoefsVals.size() > CFV_cap)
+				{
+					for (size_t i = 0; i < CFV_cap; i++)
+						*CoeficientsToVary[i] = inCoefsVals[i];
+				}
+				else
+				{
+					size_t i = 0;
+					for (; i < inCoefsVals.size(); i++)
+						*CoeficientsToVary[i] = inCoefsVals[i];
+					while (i < CFV_cap) *CoeficientsToVary[i] = 0;
+				}
 				return;
 			}
 
 		};
-
 		class IMethod: public Parameters
 		{
 		public:
@@ -72,7 +93,7 @@ namespace StraightTask
 			~Euler() = default;
 
 			double_t Predictor // value returns to in-X_pred-double_t-member field
-			(double_t const prev_U, IEquation<variables const &> & RP) {
+			(double_t const prev_U, IRightPart<variables const &> & RP) {
 				return prev_U + H * RP.Expression(X_prev); 
 			}
 
@@ -87,7 +108,7 @@ namespace StraightTask
 			variables X_cor; // corrected solution in Predictor-Corrector scheme
 
 			double_t Corrector // value returns to in-X_cor-double_t-member field
-			(double_t const prev_U, IEquation<variables const &> & RP) {
+			(double_t const prev_U, IRightPart<variables const &> & RP) {
 				return prev_U + H * (RP.Expression(X_prev) + RP.Expression(X_pred)) * 0.5; }
 		};
 
@@ -103,7 +124,7 @@ namespace StraightTask
 			double_t Predictor // value returns to in-X_pred-double_t-member field
 			(double_t & sub_U, 
 				double_t const prev_U,
-				IEquation <variables const&> & RP){
+				IRightPart <variables const&> & RP){
 
 				//sub_U is ref on a value of current component from X_sub obj
 
@@ -137,7 +158,7 @@ namespace StraightTask
 			(double_t const U_1,
 				double_t const U_2,
 				double_t const U_3,
-				double_t const prev_U, IEquation<variables const&>& RP) {
+				double_t const prev_U, IRightPart<variables const&>& RP) {
 				//return prev_U + H * RP.Expression(X_prev);
 				return 4 * H * RP.Expression(X_prev) + (U_1 - 10.0 * prev_U)/3.0 + 6.0 * U_3 - 2.0 * U_2;
 			}
@@ -147,7 +168,7 @@ namespace StraightTask
 				double_t const U_2,
 				double_t const U_3,
 				double_t const prev_U,
-				IEquation<variables const &> & RP) {
+				IRightPart<variables const &> & RP) {
 				return 0.04 * (12.0 * H * RP.Expression(X_pred) + 48.0 * prev_U - 36.0 * U_3 + 16.0 * U_2 - 3.0 * U_1);
 			}
 
@@ -165,7 +186,7 @@ namespace StraightTask
 
 			double_t A_Predictor // value returns to in X_pred double_t-member
 			(double_t const prev_U,
-				IEquation<variables const &> & RP) {
+				IRightPart<variables const &> & RP) {
 				return prev_U + H * (55.0 * RP.Expression(X_prev) - 59.0 * RP.Expression(X[3]) + 37.0 * RP.Expression(X[2]) - 9.0 * RP.Expression(X[1])) / 24.0;
 			}
 
@@ -181,7 +202,7 @@ namespace StraightTask
 
 			double_t A_Corrector // value returns to in-X_cor-double_t-member
 			(double_t const prev_U,
-				IEquation<variables const&>& RP) {
+				IRightPart<variables const&>& RP) {
 				return prev_U + H * (9 * RP.Expression(X_pred) + 19.0 * RP.Expression(X_prev) - 5.0 * RP.Expression(X[3]) + RP.Expression(X[2])) / 24.0;
 			}
 		

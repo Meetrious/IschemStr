@@ -1,7 +1,9 @@
 #pragma once
-#include <Methods.h>
+#include <base/DirPaths.h>
+#include <base/Methods.h>
+#include <base/SplRealisation.h>
 
-#define CURRENT_MODEL ThirdModel
+#include <iomanip>
 
 
 namespace StraightTask
@@ -75,7 +77,7 @@ namespace StraightTask
 
 		void ShiftRets(uint32_t Nj, double_t prev_U) { data[Nj - 1] = prev_U; }
 
-		virtual void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) {
+		virtual void StateRetArray(uint32_t ST_N, double_t ST_t0, double_t ST_gap) {
 			N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
 			data.clear();
 			for (uint32_t i = 0; i < N; i++) { data.emplace_back(0.0); }
@@ -89,7 +91,7 @@ namespace StraightTask
 		vector<double_t> data;
 	private:
 		[[nodiscard]] size_t CountRetIndex(double_t tau, size_t Nj) {
-			return (Nj + (size_t)( (N * (10*gap_width - (tau - t_0) * 10.0) / (10 * gap_width) ))) % N;
+			return (Nj + (size_t)( (N * (10.0 * gap_width - (tau - t_0) * 10.0) / (10.0 * gap_width) ))) % N;
 		}
 		
 	};
@@ -109,14 +111,14 @@ namespace StraightTask
 				SplineData[gap_counter][3],
 				SplineData[gap_counter][4]);
 		}
-	protected:
+	public:
 
 		bool is_exist;
 		bool is_triggered;
 		matrix<double_t> ExperimentData;
 		matrix<double_t> SplineData;
 
-		uint16_t max_gap_amount = 0;
+		size_t max_gap_amount = 0;
 
 		virtual const char* ini_spl_name() { return nullptr; };
 		const std::string spl_dir() { return input_dir + "exp/" + ini_spl_name() + ".txt"; }
@@ -154,7 +156,7 @@ namespace StraightTask
 				if (gap_counter + 1 == max_gap_amount) // надо k_e + 1
 				{ // i-тая величина оказалась на последнем промежутке интерполяции и t вышла в промежуток экстраполяции 
 					is_triggered = false; // выключаем передачу значения интерполянта для i-той величины
-					return;//continue; // выходим из всех if блоков и переходим на проверку сделующей (i+1)-й величины
+					return; //continue; // выходим из всех if блоков и переходим на проверку сделующей (i+1)-й величины
 				}
 
 				gap_counter++; // обновляем текущий промежуток интерполяции (инкремент счетчика k_e[i]) для текущей i-той величины
@@ -166,6 +168,8 @@ namespace StraightTask
 		void ConfigureSpline(bool(*method)(vector<vector<double_t>> const&, matrix<double_t>&)) {
 			is_triggered = method(ExperimentData, SplineData);
 			this->SplineData.shrink_to_fit();
+
+			if (max_gap_amount < SplineData.size()) max_gap_amount = SplineData.size();
 		}
 
 
@@ -226,25 +230,20 @@ namespace StraightTask
 		matrix<double_t> PreSavedSolData; // 2-dim table for presaved solution
 
 		// a method that outputs directory of a *.txt file with presaved solution
-		const std::string presol_data_dir() { return input_dir + "preserved_solution/" + sol_name() + ".txt"; }
+		const std::string presol_data_dir()noexcept { return input_dir + "preserved_solution/" + sol_name() + ".txt"; }
 
 		// a method that outputs a name of a ODE_System member
 		virtual const char* sol_name() = 0;
-
-		// a method that outputs current Step in a grid and the time moment
-		inline void SandT(std::ofstream& out, uint32_t Nj, double_t Tj) {
-			out << Nj << "\t\t\t" << std::setprecision(5) << Tj << "\t\t\t";
-		}
 
 	public:
 
 		// a method that outputs solution in a proper form 
 		void OutputSol(uint32_t Nj, double_t Tj, double_t sol) {
-			SandT(OutSolutionStream, Nj, Tj);
+			OutSolutionStream << Nj << "\t\t\t" << std::setprecision(5) << Tj << "\t\t\t";
 			OutSolutionStream << std::setprecision(15) << sol << std::endl;
 		}
 
-		void OutputError(double_t Tj, double_t Error_value) {
+		void OutputError(double_t Tj, double_t Error_value) noexcept {
 			OutErrorStream << std::setprecision(5) << Tj << "\t\t\t";
 			OutErrorStream << std::setprecision(15) << Error_value << std::endl;
 		}
@@ -256,25 +255,42 @@ namespace StraightTask
 			OutSolutionStream.open(output_dir + "ST/SOL/UNI/" + sol_name() + ".txt");
 			if (!OutSolutionStream)
 			{
-				std::cout << "\n For some reason solution output stream for <" << sol_name() << "> wasn't allocated \n";
+				std::cerr << "\n For some reason solution output stream for <" << sol_name() << "> wasn't allocated. \n";
+				std::cerr << "\t Imposible to output solution.";
 				getchar();
-				return;
+				throw("Output stream for solution was not allocated");
 			}
 			OutBudgetStream.open(output_dir + "ST/SOL/BUDS/" + sol_name() + ".txt");
 			if (!OutBudgetStream)
 			{
-				std::cout << "\n For some reason budgets output stream for <" << sol_name() << "> wasn't allocated \n";
+				std::cerr << "\n For some reason budgets output stream for <" << sol_name() << "> wasn't allocated \n";
+				std::cerr << "\t Imposible to output budgets. \n";
+				
+				// closing opened stream
+				OutSolutionStream.close(); // closing opened stream
+				
+				std::cout << "Opened streams were closed. \n";
+
 				getchar();
-				return;
+				throw("Stream for budgets was not allocated");
 			}
 			OutErrorStream.open(output_dir + "ST/SOL/ERR/" + sol_name() + ".txt");
 			if (!OutErrorStream)
 			{
-				std::cout << "\n For some reason Error-output stream for <" << sol_name() << "> wasn't allocated \n";
-				getchar();
-				return;
-			}
+				std::cerr << "\n For some reason Error-output stream for <" << sol_name() << "> wasn't allocated \n";
+				std::cerr << "\t Imposible to output calculation errors.";
+				
+				// closing opened stream
+				OutSolutionStream.close();
+				OutErrorStream.close();
 
+				std::cout << "Opened streams were closed. \n";
+
+				getchar();
+				throw("Stream for Error-output was not allocated");
+			}
+			// in case of an error this closes only those streams, that related to this object of IOs type.
+			// I suggest you to figure out how to close all of those streams that were already allocated higher in the list OutStreamAllocator!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
 
 		void CollectSolData()
@@ -282,22 +298,25 @@ namespace StraightTask
 			std::ifstream in(presol_data_dir());
 			if (!in)
 			{
-				std::cout << "\n For some reason data file was not allocated to the in_stream \n";
-				return;
+				std::cerr << "\n !!! For some reason file with presolved_data was not allocated to the in_stream on direction:" << presol_data_dir();
+				throw("\n File with presolved_data was not allocated to the in_stream");
 			}
 			double_t tmp[3];
 
 			while (!in.eof())
 			{
 				in >> tmp[0]; in >> tmp[1]; in >> tmp[2];
-
-				PreSavedSolData.push_back({ tmp[0], tmp[2] });
+				PreSavedSolData.push_back({ tmp[0], tmp[2] });// */
+				/*in >> tmp[0]; in >> tmp[1];
+				PreSavedSolData.push_back({ tmp[0], tmp[1] }); // */
 			}
 			in.close();
 			PreSavedSolData.shrink_to_fit();
 		}
 
-		double_t GetSolData(uint16_t cur_day, uint32_t Nj, uint32_t N) { return PreSavedSolData[Nj + cur_day * N][1]; }
+		double_t GetSolData(uint16_t cur_day, uint32_t Nj, uint32_t N){
+			return PreSavedSolData[Nj + cur_day * N][1]; 
+		}
 
 		~IOs() {
 			if (OutSolutionStream.is_open()) OutSolutionStream.close();
@@ -309,258 +328,40 @@ namespace StraightTask
 
 
 	template<typename RightPart>
-	class IMember : public IOs, public ISpline, public IRet
-	{
+	class IMember : public IOs, public ISpline, public IRet {
 	
-
 	public:
 
-		RightPart RP; // equation of a current member of a ODE system
+		RightPart RP; // equation of a current member of an ODE system
 
 		// a method that outputs budget contributions
 		void OutputBuds(uint32_t Nj, double_t Tj) final {
-			SandT(OutBudgetStream, Nj, Tj);
+			OutBudgetStream << Nj << "\t\t\t" << std::setprecision(5) << Tj << "\t\t\t";
 			OutBudgetStream << std::setprecision(15);
 			for (uint16_t i = 0; i < RP.B.size(); i++) OutBudgetStream << RP.B[i] << "\t\t\t";
 			OutBudgetStream << std::endl;
 		}
 
-		double_t GetInitialData()
+		void GetInitialDataFromOutside(double_t & t0, double_t & val)
 		{
 			std::ifstream in(input_dir + "list of initials/per_value/" + sol_name() + ".txt");
 			if (!in)
 			{
-				std::cout
+				std::cerr
 					<< "\n For some reason file with initial data for " << sol_name()
-					<< " was not allocated to the in_stream, so initial data will be defined by default"
+					<< " was not allocated to the in_stream, so initial data will be defined by default \n"
 					<< std::endl;
-				return -1;
+				getchar();
+				throw("Output stream for solution was not allocated");
 			}
-			double_t tmp[2] = {0,0};
-			while (!in.eof()) { in >> tmp[0]; in >> tmp[1]; }
+
+			in >> t0; in >> val;
+
 			in.close();
-			return tmp[1];
+			return;
 		}
+		void GetInitialData(double_t& t0, double_t& val) { t0 = this->RP.ini_data[0]; val = this->RP.ini_data[1]; }
+
 	};
 
-	template<typename RightPart>
-	class ISysMember : public IMember<RightPart>, public IErr{};
-
-	namespace Neurons
-	{
-		namespace NecroticCells
-		{
-			class M_ODE : public ISysMember<CURRENT_MODEL>	{
-				const char* sol_name() final { return "Necr"; };
-				const char* ini_spl_name() final { return "necr4SPL"; };
-			public:
-				M_ODE() { CollectExpData(); }
-			};
-		}
-
-		namespace AcuteChanges
-		{
-			class M_ODE : public ISysMember<CURRENT_MODEL>	{
-				const char* sol_name() final { return "Ac_ch"; };
-				const char* ini_spl_name() final { return "apop4SPL"; }
-			public:
-				M_ODE() { CollectExpData(); }
-			};
-		}
-		
-		namespace Apoptosis
-		{
-			namespace Started 
-			{
-				class M_ODE : public ISysMember<OrigModel> {
-					const char* sol_name() final { return "Ap_s"; };
-				};
-			}
-			namespace Ended
-			{
-				class M_ODE : public ISysMember<OrigModel> {
-					const char* sol_name() final { return "Ap_e"; };
-					const char* ini_spl_name() final { return "apop4SPL"; }
-				};
-			}
-		}
-
-		namespace IntactCells
-		{
-			class M_ODE : public ISysMember<CURRENT_MODEL>{
-				const char* sol_name() final { return "Healt"; };
-				const char* ini_spl_name() final { return "hel4SPL"; }
-			public:
-				M_ODE() { CollectExpData(); }
-			};
-		}
-	}
-
-	namespace Cytokines
-	{
-		namespace Pro_Inflam
-		{
-			class M_ODE : public ISysMember<CURRENT_MODEL>{
-				const char* sol_name() final { return "Cy"; };
-				const char* ini_spl_name() final { return "cyto4SPL"; }
-			public:
-				M_ODE() { CollectExpData(); }
-			};
-		}
-	}
-
-	namespace Adhesion
-	{
-		class M_ODE : public ISysMember<OrigModel>{
-			const char* sol_name() final { return "Adhes"; };
-		};
-	}
-
-	namespace LeuMacrophags
-	{
-		class M_ODE : public ISysMember<CURRENT_MODEL>{
-			const char* sol_name() final { return "Lm"; };
-			const char* ini_spl_name() final { return "lm4SPL"; }
-		public:
-			M_ODE() { CollectExpData(); }
-		};
-	}
-
-	namespace LeuNeutrophils
-	{
-		class M_ODE : public ISysMember<CURRENT_MODEL>{
-			const char* sol_name() final { return "Ln"; };
-			const char* ini_spl_name() final { return "ln4SPL"; }
-		public:
-			M_ODE() { CollectExpData(); }
-		};
-	}
-
-	namespace Microglia
-	{
-		namespace Active
-		{
-			class M_ODE : public ISysMember<CURRENT_MODEL>{
-				const char* sol_name() final { return "Mi_active"; };
-			};
-		}
-		namespace Inactive
-		{
-			class M_ODE : public ISysMember<CURRENT_MODEL>	{
-				const char* sol_name() final { return "Mi_inactive"; };
-			};
-		}
-	}
-
-	template<typename RightPart>
-	class ISubMember : public IMember<RightPart>{};
-
-	namespace ToxDamage
-	{
-		namespace Full
-		{
-			class M_Sub : public ISubMember<CURRENT_MODEL>
-			{
-			public:
-				const char* sol_name() final { return "D_Full"; }
-				M_Sub() {}
-			};
-		}
-		namespace Nec_partial
-		{
-			class M_Sub : public ISubMember<CURRENT_MODEL>
-			{
-			public:
-				const char* sol_name() final { return "DN_c"; }
-			};
-		}
-		namespace Apop_partial
-		{
-			class M_Sub : public ISubMember<CURRENT_MODEL>
-			{
-			public:
-				const char* sol_name() final { return "DA_c"; }
-			};
-		}
-	}
-
-	namespace Phagocytosis 
-	{
-		namespace Strong
-		{
-			class M_Sub : public ISubMember<OrigModel>
-			{
-			public:
-				const char* sol_name() { return "Eps_s"; }
-			};
-		}
-
-		namespace Weak
-		{
-			class M_Sub : public ISubMember<OrigModel>
-			{
-			public:
-				const char* sol_name() { return "Eps_w"; }
-			};
-		}
-	}
-
-//---------------------------------------------------------------------------------
-//=================================================================================
-
-	namespace Test
-	{
-		namespace OneDim {
-			class M_ODE : public ISysMember<Exp>{
-			public:
-
-				const char* sol_name()final { return RP.name; }
-				
-				double_t GetInitialData() { return RP.ini_val; }
-
-				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
-					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
-					data.clear();
-					//for (uint32_t i = 0; i < N; i++) { data.emplace_back(1.0); }
-					for (uint32_t i = 0; i < N; i++) { data.emplace_back(RP.Solution(t_0 - gap_width + i * (gap_width / N))); }
-				}
-
-			};
-		}
-		namespace ThreeDim
-		{
-			class X_m_ODE : public ISysMember<Ox_ret> {
-				const char* sol_name()final { return RP.name; }
-			public:
-				double_t GetInitialData() { return RP.ini_val; }
-				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
-					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
-					data.clear();
-					for (uint32_t i = 0; i < N; i++) { data.emplace_back(RP.Solution(t_0 - gap_width + i*(gap_width/N))); }
-				}
-			};
-			class Y_m_ODE : public ISysMember<Oy_ret> {
-				const char* sol_name()final { return RP.name; }
-			public:
-				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
-					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
-					data.clear();
-					for (uint32_t i = 0; i < N; i++) { data.emplace_back(RP.Solution(t_0 - gap_width + i * (gap_width / N))); }
-				}
-			};
-			class Z_m_ODE : public ISysMember<Oz_ret> {
-				const char* sol_name()final { return RP.name; }
-			public:
-				void SetInitialRet(uint32_t ST_N, double_t ST_t0, double_t ST_gap) final {
-					N = ST_N; t_0 = ST_t0; gap_width = ST_gap;
-					data.clear();
-					for (uint32_t i = 0; i < N; i++) { data.emplace_back(RP.Solution(t_0 - gap_width + i * (gap_width / N))); }
-				}
-			};
-		}
-	}
 }
-
-#undef ORGL
-#undef SCND
-#undef THRD

@@ -2,7 +2,7 @@
 #include <functional>	// поддержка полиморфных обёрток функций
 #include <array>
 
-#include <models/1st/settings.h>
+#include <models/3rd/settings.h>
 
 namespace StraightTask
 {
@@ -38,8 +38,7 @@ namespace StraightTask
 
 		// list of equations in the processed system
 		Neurons::NecroticCells::M_ODE NEC;
-		Neurons::Apoptosis::Started::M_ODE AS;
-		Neurons::Apoptosis::Ended::M_ODE AE;
+		Neurons::AcuteChanges::M_ODE AC;
 		Neurons::IntactCells::M_ODE HEL;
 
 		Cytokines::Pro_Inflam::M_ODE CY;
@@ -52,17 +51,17 @@ namespace StraightTask
 
 
 		// subbordinate values relevant for a system 
-		Cytokines::M_Sub PSY;
 		ToxDamage::Full::M_Sub DF;
-		ToxDamage::Initial::M_Sub D_INI;
-
+		ToxDamage::Apop_partial::M_Sub DP_A;
+		ToxDamage::Nec_partial::M_Sub DP_N;
 		Phagocytosis::Strong::M_Sub EPS_S;
+		Phagocytosis::Weak::M_Sub EPS_W;
 
 
 
-		std::array<std::function<void()>, 15> DataCollector = {
+		std::array<std::function<void()>, 11> DataCollector = {
 			[&]()-> void {NEC.CollectSolData(); },
-			[&]()-> void {AE.CollectSolData(); },
+			[&]()-> void {AC.CollectSolData(); },
 			[&]()-> void {HEL.CollectSolData(); },
 
 			[&]()-> void {CY.CollectSolData(); },
@@ -73,16 +72,13 @@ namespace StraightTask
 			[&]()-> void {MII.CollectSolData(); },
 
 			[&]()-> void {DF.CollectSolData(); },
-			[&]()-> void {D_INI.CollectSolData(); },
-
 			[&]()-> void {EPS_S.CollectSolData(); },
 			
 		};
 
-		std::array<std::function<void(variables&)>, 10> IniDataInitialiser_FO = {
+		std::array<std::function<void(variables&)>, 9> IniDataInitialiser_FO = {
 			[&](variables& X) -> void {NEC.GetInitialDataFromOutside(X.tj, X.nec); },
-			[&](variables& X) -> void {AS.GetInitialDataFromOutside(X.tj,X.ap_s); },
-			[&](variables& X) -> void {AE.GetInitialDataFromOutside(X.tj,X.ap_e); },
+			[&](variables& X) -> void {AC.GetInitialDataFromOutside(X.tj,X.acu_c); },
 			[&](variables& X) -> void {HEL.GetInitialDataFromOutside(X.tj,X.hel); },
 			[&](variables& X) -> void {CY.GetInitialDataFromOutside(X.tj,X.cy); },
 			[&](variables& X) -> void {ADH.GetInitialDataFromOutside(X.tj,X.adh); },
@@ -91,10 +87,10 @@ namespace StraightTask
 			[&](variables& X) -> void {MIA.GetInitialDataFromOutside(X.tj,X.mia); },
 			[&](variables& X) -> void {MII.GetInitialDataFromOutside(X.tj,X.mii); }// 9шт */
 		};
-		std::array<std::function<void(variables&)>, 10> IniDataInitialiser = {
+
+		std::array<std::function<void(variables&)>, 9> IniDataInitialiser = {
 			[&](variables& X) -> void {NEC.GetInitialData(X.tj, X.nec); },
-			[&](variables& X) -> void {AS.GetInitialData(X.tj,X.ap_s); },
-			[&](variables& X) -> void {AE.GetInitialData(X.tj,X.ap_e); },
+			[&](variables& X) -> void {AC.GetInitialData(X.tj,X.acu_c); },
 			[&](variables& X) -> void {HEL.GetInitialData(X.tj,X.hel); },
 			[&](variables& X) -> void {CY.GetInitialData(X.tj,X.cy); },
 			[&](variables& X) -> void {ADH.GetInitialData(X.tj,X.adh); },
@@ -104,18 +100,13 @@ namespace StraightTask
 			[&](variables& X) -> void {MII.GetInitialData(X.tj,X.mii); }// 9шт */
 		};
 
-		std::array<std::function<void(variables&)>, 4> IniRetInitialiser = {
-			[&](variables& X) -> void {X.ret.hel_12 = HEL.GetRetValue(12.0, 0); },
-			[&](variables& X) -> void {X.ret.adh_24 = ADH.GetRetValue(24.0, 0); },
-			[&](variables& X) -> void {X.ret.d_12 = D_INI.GetRetValue(12.0, 0); },
-			[&](variables& X) -> void {X.ret.adh_12 = ADH.GetRetValue(12.0, 0); } // */
-
+		std::array<std::function<void(variables&)>, 1> IniRetInitialiser = {
+			[&](variables& X) -> void {X.ret.adh_4 = ADH.GetRetValue(4.0, 0); },
 		};
 
-		std::array<std::function<void(uint16_t, uint32_t, uint32_t, variables&)>, 13> SolDataGetter = {
+		std::array<std::function<void(uint16_t, uint32_t, uint32_t, variables&)>, 11> SolDataGetter = {
 			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.nec = NEC.GetSolData(day, Nj, N); },
-			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.ap_s = AS.GetSolData(day, Nj, N); },
-			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.ap_e = AE.GetSolData(day, Nj, N); },
+			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.acu_c = AC.GetSolData(day, Nj, N); },
 			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.hel = HEL.GetSolData(day, Nj, N); },
 
 			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.cy = CY.GetSolData(day, Nj, N); },
@@ -128,22 +119,20 @@ namespace StraightTask
 			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.mii = MII.GetSolData(day, Nj, N); },
 
 			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.d_F = DF.GetSolData(day, Nj, N); },
-			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.d_ini = D_INI.GetSolData(day, Nj, N); },
 			[&](uint16_t day, uint32_t Nj, uint32_t N, variables& X) -> void {X.eps_s = EPS_S.GetSolData(day, Nj, N); }
-			
 		};
 
-		std::array<std::function<void(variables&)>, 4> SubValuesExpressor = {
+		std::array<std::function<void(variables&)>, 5> SubValuesExpressor = {
 			[&](variables& X) -> void { X.d_F = DF.RP.Expression(X); },
-			[&](variables& X) -> void { X.d_ini = D_INI.RP.Expression(X); },
-			[&](variables& X) -> void { X.psy = PSY.RP.Expression(X); },
+			[&](variables& X) -> void { X.dp_A = DP_A.RP.Expression(X); },
+			[&](variables& X) -> void { X.dp_N = DP_N.RP.Expression(X); },
 			[&](variables& X) -> void { X.eps_s = EPS_S.RP.Expression(X); },
+			[&](variables& X) -> void { X.eps_w = EPS_W.RP.Expression(X); }
 		};
 
-		std::array<std::function<void()>, 13> OutStreamAllocator = {
+		std::array<std::function<void()>, 14> OutStreamAllocator = {
 			[&]() -> void {NEC.AllocateOutputStreams(); },
-			[&]() -> void {AS.AllocateOutputStreams(); },
-			[&]() -> void {AE.AllocateOutputStreams(); },
+			[&]() -> void {AC.AllocateOutputStreams(); },
 			[&]() -> void {HEL.AllocateOutputStreams(); },
 
 			[&]() -> void {CY.AllocateOutputStreams(); },
@@ -154,16 +143,17 @@ namespace StraightTask
 			[&]() -> void {MII.AllocateOutputStreams(); },
 
 			[&]() -> void {DF.AllocateOutputStreams(); },
-			[&]() -> void {D_INI.AllocateOutputStreams(); },
-			[&]() -> void {EPS_S.AllocateOutputStreams(); } // 13 */
+			[&]() -> void {DP_N.AllocateOutputStreams(); },
+			[&]() -> void {DP_A.AllocateOutputStreams(); },
+			[&]() -> void {EPS_S.AllocateOutputStreams(); },
+			[&]() -> void {EPS_W.AllocateOutputStreams(); } // 14 */
 		};
 
 		//why wouldn't you put this output realisation as a method in variables class?
 		std::array<std::function<void(uint32_t, double_t, variables&)>, 13> SolutionOutputter = {
 
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {NEC.OutputSol(Nj, Tj, X.nec); },
-			[&](uint32_t Nj, double_t Tj, variables& X) -> void {AS.OutputSol(Nj, Tj, X.ap_s); },
-			[&](uint32_t Nj, double_t Tj, variables& X) -> void {AE.OutputSol(Nj, Tj, X.ap_e); },
+			[&](uint32_t Nj, double_t Tj, variables& X) -> void {AC.OutputSol(Nj, Tj, X.acu_c); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {HEL.OutputSol(Nj, Tj, X.hel); },
 
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {CY.OutputSol(Nj, Tj, X.cy); },
@@ -176,15 +166,15 @@ namespace StraightTask
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {MII.OutputSol(Nj, Tj, X.mii); },
 
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {DF.OutputSol(Nj, Tj, X.d_F); },
-			[&](uint32_t Nj, double_t Tj, variables& X) -> void {D_INI.OutputSol(Nj, Tj, X.d_ini); },
+			[&](uint32_t Nj, double_t Tj, variables& X) -> void {DP_N.OutputSol(Nj, Tj, X.dp_N); },
+			[&](uint32_t Nj, double_t Tj, variables& X) -> void {DP_A.OutputSol(Nj, Tj, X.dp_A); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {EPS_S.OutputSol(Nj, Tj, X.eps_s); },
 			
 		};
 
-		std::array<std::function<void(uint32_t, double_t)>, 12> BudgetOutputter = {
+		std::array<std::function<void(uint32_t, double_t)>, 11> BudgetOutputter = {
 			[&](uint32_t Nj, double_t Tj) -> void {NEC.OutputBuds(Nj, Tj); },
-			[&](uint32_t Nj, double_t Tj) -> void {AS.OutputBuds(Nj, Tj); },
-			[&](uint32_t Nj, double_t Tj) -> void {AE.OutputBuds(Nj, Tj); },
+			[&](uint32_t Nj, double_t Tj) -> void {AC.OutputBuds(Nj, Tj); },
 			[&](uint32_t Nj, double_t Tj) -> void {HEL.OutputBuds(Nj, Tj); },
 
 			[&](uint32_t Nj, double_t Tj) -> void {CY.OutputBuds(Nj, Tj); },
@@ -200,10 +190,8 @@ namespace StraightTask
 			[&](uint32_t Nj, double_t Tj) -> void {EPS_S.OutputBuds(Nj, Tj); }
 		};
 
-		std::array<std::function<void(uint32_t, double_t, double_t)>, 3> RetInitialiser = {
+		std::array<std::function<void(uint32_t, double_t, double_t)>, 1> RetInitialiser = {
 			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {ADH.StateRetArray(N, t0, gapWidth); },
-			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {HEL.StateRetArray(N, t0, gapWidth); },
-			[&](uint32_t N, double_t t0, double_t gapWidth) -> void {D_INI.StateRetArray(N, t0, gapWidth); }// */
 		};
 
 	};
@@ -247,12 +235,14 @@ namespace StraightTask
 				if (!trg) throw(" Initial data is inacceptable. ");
 				else std::cerr << "Approved \n Proceeding. \n";
 			}
+
 			for (auto const& cur : SubValuesExpressor) { cur(ST.X_init); }// */
+
 			return;
 		}
 
 		bool is_SYS_deflecting() {
-			bool if_ret = NEC.RP.ret_is + AS.RP.ret_is + AE.RP.ret_is + HEL.RP.ret_is +
+			bool if_ret = NEC.RP.ret_is + AC.RP.ret_is + HEL.RP.ret_is +
 				CY.RP.ret_is + ADH.RP.ret_is + LM.RP.ret_is + LN.RP.ret_is +
 				MIA.RP.ret_is + MII.RP.ret_is;
 			return if_ret;
@@ -265,11 +255,11 @@ namespace StraightTask
 
 				// collecting presolved solution to freeze the system relatively given behaviour
 				// for (auto const& cur : DataCollector) { cur(); } // full
-				//DataCollector[10]();
+				DataCollector[3]();
 
 				// setting initial data from presolved_solution_data
 				// for (auto const& cur : SolDataGetter) { cur(0, 0, ST.X_init); } // full
-				//SolDataGetter[11](0, 0, ST.N, ST.X_init);
+				SolDataGetter[3](0, 0, ST.N, ST.X_init);
 
 				if (is_SYS_deflecting())
 				{
@@ -290,35 +280,27 @@ namespace StraightTask
 
 		void PrepairTheOutput()
 		{
-			try{
+			try {
+				// streams for output
+				for (auto const& cur : OutStreamAllocator) { cur(); }
 
-			// streams for output
-			for (auto const& cur : OutStreamAllocator) { cur(); }
-
-			// outputting initial solution data
-			for (auto const& cur : SolutionOutputter) { cur(0, ST.X_init.tj, ST.X_init); }
-			
+				// outputting initial solution data
+				for (auto const& cur : SolutionOutputter) { cur(0, ST.X_init.tj, ST.X_init); }
 			}
-			catch (const char* exception){
+			catch (const char* exception) {
 				std::cerr << "WARNING:" << exception << "\n Terminating.";
 				throw(exception);
 			}
 		}
 
 		void RetUpload(uint32_t Nj) {
-			
-			ST.X_pred.ret.hel_12 = HEL.GetRetValue(12.0, Nj);
-			ST.X_pred.ret.adh_12 = ADH.GetRetValue(12.0, Nj);
-			ST.X_pred.ret.adh_24 = ADH.GetRetValue(24.0, Nj);
-			ST.X_pred.ret.d_12 = D_INI.GetRetValue(12.0, Nj);
+			ST.X_pred.ret.adh_4 = ADH.GetRetValue(4.0, Nj);
 			// */
 		}
 
 		virtual void NodeShift() { ST.X_prev = *ST.X_sol; }
 
 		void RetDataUpdate(uint32_t Nj) {
-			HEL.ShiftRets(Nj, ST.X_prev.hel);
-			D_INI.ShiftRets(Nj, ST.X_prev.d_ini);
 			ADH.ShiftRets(Nj, ST.X_prev.adh);// */
 		}
 
@@ -334,11 +316,10 @@ namespace StraightTask
 		Euler() { ST.X_sol = &ST.X_pred; }
 		void ApplyMethod() final {
 			ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.Predictor(ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.Predictor(ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
+			// ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_prev.lm, LM.RP);
@@ -364,11 +345,10 @@ namespace StraightTask
 			ST.X_cor.ret = ST.X_pred.ret;
 
 			ST.X_cor.nec = ST.Corrector(ST.X_prev.nec, NEC.RP);
-			ST.X_cor.ap_s = ST.Corrector(ST.X_prev.ap_s, AS.RP);
-			ST.X_cor.ap_e = ST.Corrector(ST.X_prev.ap_e, AE.RP);
+			ST.X_cor.acu_c = ST.Corrector(ST.X_prev.acu_c, AC.RP);
 			ST.X_cor.hel = ST.Corrector(ST.X_prev.hel, HEL.RP);
 
-			ST.X_cor.cy = ST.Corrector(ST.X_prev.cy, CY.RP);
+			//ST.X_cor.cy = ST.Corrector(ST.X_prev.cy, CY.RP);
 			ST.X_cor.adh = ST.Corrector(ST.X_prev.adh, ADH.RP);
 
 			ST.X_cor.lm = ST.Corrector(ST.X_prev.lm, LM.RP);
@@ -383,8 +363,7 @@ namespace StraightTask
 	private:
 		void ApplyEuler() {
 			ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.Predictor(ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.Predictor(ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
 
 			ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
@@ -408,11 +387,10 @@ namespace StraightTask
 			ST.X_sub = ST.X_prev;
 
 			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.Predictor(ST.X_sub.ap_s, ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.Predictor(ST.X_sub.ap_e, ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
+			//ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
@@ -461,11 +439,11 @@ namespace StraightTask
 			ST.X_cor.ret = ST.X_pred.ret;
 
 			ST.X_cor.nec = ST.Corrector(ST.X[1].nec, ST.X[2].nec, ST.X[3].nec, ST.X_prev.nec, NEC.RP);
-			ST.X_cor.ap_s = ST.Corrector(ST.X[1].ap_s, ST.X[2].ap_s, ST.X[3].ap_s, ST.X_prev.ap_s, AS.RP);
-			ST.X_cor.ap_e = ST.Corrector(ST.X[1].ap_e, ST.X[2].ap_e, ST.X[3].ap_e, ST.X_prev.ap_e, AE.RP);
+			ST.X_cor.acu_c = ST.Corrector(ST.X[1].acu_c, ST.X[2].acu_c, ST.X[3].acu_c, ST.X_prev.acu_c, AC.RP);
+			
 			ST.X_cor.hel = ST.Corrector(ST.X[1].hel, ST.X[2].hel, ST.X[3].hel, ST.X_prev.hel, HEL.RP);
 
-			ST.X_cor.cy = ST.Corrector(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
+			//ST.X_cor.cy = ST.Corrector(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
 			ST.X_cor.adh = ST.Corrector(ST.X[1].adh, ST.X[2].adh, ST.X[3].adh, ST.X_prev.adh, ADH.RP);
 
 			ST.X_cor.lm = ST.Corrector(ST.X[1].lm, ST.X[2].lm, ST.X[3].lm, ST.X_prev.lm, LM.RP);
@@ -487,13 +465,14 @@ namespace StraightTask
 	private:
 		void ApplyPred() {
 			ST.X_pred.nec = ST.GPred(ST.X[1].nec, ST.X[2].nec, ST.X[3].nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.GPred(ST.X[1].ap_s, ST.X[2].ap_s, ST.X[3].ap_s, ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.GPred(ST.X[1].ap_e, ST.X[2].ap_e, ST.X[3].ap_e, ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.GPred(ST.X[1].acu_c, ST.X[2].acu_c, ST.X[3].acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.GPred(ST.X[1].hel, ST.X[2].hel, ST.X[3].hel, ST.X_prev.hel, HEL.RP);
-			ST.X_pred.cy = ST.GPred(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
+			
+			//ST.X_pred.cy = ST.GPred(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.GPred(ST.X[1].adh, ST.X[2].adh, ST.X[3].adh, ST.X_prev.adh, ADH.RP);
 			ST.X_pred.lm = ST.GPred(ST.X[1].lm, ST.X[2].lm, ST.X[3].lm, ST.X_prev.lm, LM.RP);
 			ST.X_pred.ln = ST.GPred(ST.X[1].ln, ST.X[2].ln, ST.X[3].ln, ST.X_prev.ln, LN.RP);
+
 			ST.X_pred.mia = ST.GPred(ST.X[1].mia, ST.X[2].mia, ST.X[3].mia, ST.X_prev.mia, MIA.RP);
 			ST.X_pred.mii = ST.GPred(ST.X[1].mii, ST.X[2].mii, ST.X[3].mii, ST.X_prev.mii, MII.RP);
 
@@ -504,11 +483,10 @@ namespace StraightTask
 			ST.X_sub = ST.X_prev;
 
 			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.Predictor(ST.X_sub.ap_s, ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.Predictor(ST.X_sub.ap_e, ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
+			//ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
@@ -550,11 +528,10 @@ namespace StraightTask
 
 		void ApplyMethod() {
 			ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.A_Predictor(ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.A_Predictor(ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.A_Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.A_Predictor(ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.A_Predictor(ST.X_prev.cy, CY.RP);
+			//ST.X_pred.cy = ST.A_Predictor(ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.A_Predictor(ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.A_Predictor(ST.X_prev.lm, LM.RP);
@@ -577,11 +554,10 @@ namespace StraightTask
 			ST.X_sub = ST.X_prev;
 
 			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.Predictor(ST.X_sub.ap_s, ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.Predictor(ST.X_sub.ap_e, ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
+			//ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
@@ -630,11 +606,10 @@ namespace StraightTask
 			ST.X_cor.ret = ST.X_pred.ret;
 
 			ST.X_cor.nec = ST.A_Corrector(ST.X_prev.nec, NEC.RP);
-			ST.X_cor.ap_s = ST.A_Corrector(ST.X_prev.ap_s, AS.RP);
-			ST.X_cor.ap_e = ST.A_Corrector(ST.X_prev.ap_e, AE.RP);
+			ST.X_cor.acu_c = ST.A_Corrector(ST.X_prev.acu_c, AC.RP);
 			ST.X_cor.hel = ST.A_Corrector(ST.X_prev.hel, HEL.RP);
 
-			ST.X_cor.cy = ST.A_Corrector(ST.X_prev.cy, CY.RP);
+			//ST.X_cor.cy = ST.A_Corrector(ST.X_prev.cy, CY.RP);
 			ST.X_cor.adh = ST.A_Corrector(ST.X_prev.adh, ADH.RP);
 
 			ST.X_cor.lm = ST.A_Corrector(ST.X_prev.lm, LM.RP);
@@ -654,11 +629,10 @@ namespace StraightTask
 	private:
 		void ApplyAdams() {
 			ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.A_Predictor(ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.A_Predictor(ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.A_Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.A_Predictor(ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.A_Predictor(ST.X_prev.cy, CY.RP);
+			// ST.X_pred.cy = ST.A_Predictor(ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.A_Predictor(ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.A_Predictor(ST.X_prev.lm, LM.RP);
@@ -675,11 +649,10 @@ namespace StraightTask
 			ST.X_sub = ST.X_prev;
 
 			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.ap_s = ST.Predictor(ST.X_sub.ap_s, ST.X_prev.ap_s, AS.RP);
-			ST.X_pred.ap_e = ST.Predictor(ST.X_sub.ap_e, ST.X_prev.ap_e, AE.RP);
+			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
+			//ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
@@ -692,4 +665,5 @@ namespace StraightTask
 		}
 	};
 }
+
 #include <base/Solver.h>
