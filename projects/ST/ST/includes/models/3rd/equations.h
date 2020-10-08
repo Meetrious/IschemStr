@@ -25,7 +25,7 @@ namespace StraightTask
 	}
 
 	[[nodiscard]] inline double_t GetPositive (double_t val) {
-		if (val > 0) return val; else return 0;
+		if (val > 0.0) return val; else return 0;
 	}
 
 	[[nodiscard]] inline double_t indicator(double_t val, double_t border){
@@ -63,7 +63,8 @@ namespace StraightTask
 			class Equation : public IEquation<variables const&> {
 			public:
 				Equation() { B.insert(B.end(), 5, 0.0); B.shrink_to_fit(); ret_is = false;}
-				const double_t ini_data[2] = { 0.5, 0.2890 };
+				//const double_t ini_data[2] = { 0.5, 0.2890 };
+				const double_t ini_data[2] = { 0.5, 0.01 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					B[1] = (q_A - p_r) * u.dp_A * u.hel * Hill(1.0, u.acu_c, q_A_h, 1);
 					B[2] = q_H * u.dp_N * u.hel * u.acu_c;
@@ -79,7 +80,8 @@ namespace StraightTask
 			class Equation : public IEquation<variables const&> {
 			public:
 				Equation() { B.insert(B.end(), 4, 0.0); B.shrink_to_fit(); ret_is = false; }
-				const double_t ini_data[2] = { 0.5, 0.7110 };
+				//const double_t ini_data[2] = { 0.5, 0.7110 };
+				const double_t ini_data[2] = { 0.5, 0.99 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					B[1] = (-1.0 + p_r) * u.hel * q_A * u.dp_A * Hill(1.0, u.acu_c, q_A_h, 1);
 					B[2] = -q_N * u.dp_N * u.nec * Hill(1.0, u.hel, c_H, 2);
@@ -99,14 +101,15 @@ namespace StraightTask
 		// ordinal
 		//static double_t p_Macy = 2.9481, p_Lmcy = 5.6667, p_Lncy = 8.2513, C_Ln = 3.3918, e_cy = 5.577, l1 = 0.75752, l2 = 5.1694, l3 = 1.3089, _A = 0.14514;
 		static double_t p_Macy = 3.7386, p_Lmcy = 4.9559, p_Lncy = 6.2865,
-			e_cy = 1.166, l1 = 0.75752, l2 = 5.1694, l3 = 1.3089, _A = 0.14514;																					
+			e_cy = 1.166, l1 = 0.75752, l2 = 5.1694, l3 = 1.3089, _A = 0.014514;																					
 
 		namespace Pro_Inflam
 		{
 			class Equation : public IEquation<variables const&> {
 			public:
 				Equation() { B.insert(B.end(), 5, 0.0); B.shrink_to_fit(); ret_is = false;}
-				const double_t ini_data[2] = { 0.5, 0.0906 };
+				//const double_t ini_data[2] = { 0.5, 0.0906 };
+				const double_t ini_data[2] = { 0.5, 0.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					B[1] = CHill(p_Macy, u.mia, C_Ma, l1) * (u.nec + GetPositive(u.acu_c - _A));
 					B[2] = p_Lmcy * u.lm * (u.nec + u.acu_c);
@@ -121,14 +124,14 @@ namespace StraightTask
 
 	namespace Adhesion 
 	{
-		static double_t o_cy_1 = 2.62e-2,
-					o_cy_2 = 3.14e-2,
-					e_adh = 1.31e-2;
+		static double_t 
+			o_cy_1 = 2.62e-2, o_cy_2 = 3.14e-2, e_adh = 1.31e-2;
 
 		class Equation : public IEquation<variables const&>{
 		public:
 			Equation() { B.insert(B.end(), 4, 0.0); B.shrink_to_fit(); ret_is = false; }
-			const double_t ini_data[2] = { 0.5, 0.2 };
+			const double_t ini_data[2] = { 0.5, 0.0 };
+			//const double_t ini_data[2] = { 0.5, 0.2 };
 			[[nodiscard]] double_t Expression(variables const& u)noexcept final{
 				B[1] = o_cy_1 * u.cy;
 				B[2] = o_cy_2 * u.adh * u.cy;
@@ -161,14 +164,15 @@ namespace StraightTask
 	namespace LeuNeutrophils
 	{
 		static double_t
-			c_Ln = 1.47,  d_Ln = 84,
+			c_Ln = 1.47,  d_Ln = 84.0,
 			c_dLn1 = 16.2, K_Ln1 = 3.96,
 			c_dLn2 = 4.43, K_Ln2 = 9.899;
 
 		class Equation : public IEquation<variables const&>{
 		public:
 			Equation() { B.insert(B.end(), 5, 0.0); B.shrink_to_fit(); ret_is = false; }
-			const double_t ini_data[2] = { 0.5, 0.0861204 };
+			//const double_t ini_data[2] = { 0.5, 0.0861204 };
+			const double_t ini_data[2] = { 0.5, 0.0 };
 			[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 				B[1] = c_Ln * u.adh * u.ln;
 				B[2] = Hill(c_dLn1, u.cy, K_Ln1, 1);
@@ -193,7 +197,8 @@ namespace StraightTask
 			class Equation : public IEquation<variables const&>{
 			public:
 				Equation() { B.insert(B.end(), 5, 0.0); B.shrink_to_fit(); ret_is = false; }
-				const double_t ini_data[2] = { 0.5, 0.01 };
+				//const double_t ini_data[2] = { 0.5, 0.01 };
+				const double_t ini_data[2] = { 0.5, 0.001 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					B[1] = u.mii * c_A * u.acu_c;
 					B[2] = u.mii * c_N * u.nec;
@@ -211,7 +216,8 @@ namespace StraightTask
 			{
 			public:
 				Equation() { B.insert(B.end(), 5, 0.0); B.shrink_to_fit(); ret_is = false; }
-				const double_t ini_data[2] = { 0.5, 0.99 };
+				//const double_t ini_data[2] = { 0.5, 0.99 };
+				const double_t ini_data[2] = { 0.5, 0.999 };
 				[[nodiscard]] inline double_t Expression(variables const& u) noexcept final {
 					B[1] = - u.mii * c_A * u.acu_c;
 					B[2] = - u.mii * c_N * u.nec;

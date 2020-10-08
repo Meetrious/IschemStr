@@ -1,3 +1,5 @@
+// This header contains dependent variables of the Test-tasks.
+
 #pragma once
 
 

@@ -150,7 +150,7 @@ namespace StraightTask
 		};
 
 		//why wouldn't you put this output realisation as a method in variables class?
-		std::array<std::function<void(uint32_t, double_t, variables&)>, 13> SolutionOutputter = {
+		std::array<std::function<void(uint32_t, double_t, variables&)>, 14> SolutionOutputter = {
 
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {NEC.OutputSol(Nj, Tj, X.nec); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {AC.OutputSol(Nj, Tj, X.acu_c); },
@@ -169,7 +169,8 @@ namespace StraightTask
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {DP_N.OutputSol(Nj, Tj, X.dp_N); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {DP_A.OutputSol(Nj, Tj, X.dp_A); },
 			[&](uint32_t Nj, double_t Tj, variables& X) -> void {EPS_S.OutputSol(Nj, Tj, X.eps_s); },
-			
+			[&](uint32_t Nj, double_t Tj, variables& X) -> void {EPS_W.OutputSol(Nj, Tj, X.eps_w); }
+
 		};
 
 		std::array<std::function<void(uint32_t, double_t)>, 11> BudgetOutputter = {
@@ -255,11 +256,11 @@ namespace StraightTask
 
 				// collecting presolved solution to freeze the system relatively given behaviour
 				// for (auto const& cur : DataCollector) { cur(); } // full
-				DataCollector[3]();
+				//DataCollector[3]();
 
 				// setting initial data from presolved_solution_data
 				// for (auto const& cur : SolDataGetter) { cur(0, 0, ST.X_init); } // full
-				SolDataGetter[3](0, 0, ST.N, ST.X_init);
+				//SolDataGetter[3](0, 0, ST.N, ST.X_init);
 
 				if (is_SYS_deflecting())
 				{
@@ -319,7 +320,7 @@ namespace StraightTask
 			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
 
-			// ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
+			ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_prev.lm, LM.RP);
@@ -348,7 +349,7 @@ namespace StraightTask
 			ST.X_cor.acu_c = ST.Corrector(ST.X_prev.acu_c, AC.RP);
 			ST.X_cor.hel = ST.Corrector(ST.X_prev.hel, HEL.RP);
 
-			//ST.X_cor.cy = ST.Corrector(ST.X_prev.cy, CY.RP);
+			ST.X_cor.cy = ST.Corrector(ST.X_prev.cy, CY.RP);
 			ST.X_cor.adh = ST.Corrector(ST.X_prev.adh, ADH.RP);
 
 			ST.X_cor.lm = ST.Corrector(ST.X_prev.lm, LM.RP);
@@ -390,7 +391,7 @@ namespace StraightTask
 			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
 			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
 
-			//ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
+			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
 			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
 
 			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);

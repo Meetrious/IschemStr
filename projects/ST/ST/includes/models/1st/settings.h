@@ -1,4 +1,7 @@
+// This header constains final shells of ODE_members of the 1st-model
+
 #pragma once
+
 
 #include <models/1st/equations.h>
 #include <base/Settings_base.h>
@@ -15,7 +18,7 @@ namespace StraightTask
 	{
 		namespace NecroticCells
 		{
-			class M_ODE : public ISysMember<Equation> {
+			class M_ODE : public ISysMember<RightPart> {
 				const char* sol_name() noexcept final { return "Necr"; };
 				const char* ini_spl_name() noexcept final { return "necr4SPL"; };
 			public:
@@ -25,7 +28,7 @@ namespace StraightTask
 
 		namespace AcuteChanges
 		{
-			class M_ODE : public ISysMember<Equation> {
+			class M_ODE : public ISysMember<RightPart> {
 				const char* sol_name()noexcept final { return "Ac_ch"; };
 				const char* ini_spl_name()noexcept final { return "apop4SPL"; }
 			public:
@@ -37,13 +40,13 @@ namespace StraightTask
 		{
 			namespace Started
 			{
-				class M_ODE : public ISysMember<Equation> {
+				class M_ODE : public ISysMember<RightPart> {
 					const char* sol_name()noexcept final { return "Ap_s"; };
 				};
 			}
 			namespace Ended
 			{
-				class M_ODE : public ISysMember<Equation> {
+				class M_ODE : public ISysMember<RightPart> {
 					const char* sol_name()noexcept final { return "Ap_e"; };
 					const char* ini_spl_name()noexcept final { return "apop4SPL"; }
 				};
@@ -52,7 +55,7 @@ namespace StraightTask
 
 		namespace IntactCells
 		{
-			class M_ODE : public ISysMember<Equation> {
+			class M_ODE : public ISysMember<RightPart> {
 				const char* sol_name()noexcept final { return "Healt"; };
 				const char* ini_spl_name()noexcept final { return "hel4SPL"; }
 			public:
@@ -65,7 +68,7 @@ namespace StraightTask
 	{
 		namespace Pro_Inflam
 		{
-			class M_ODE : public ISysMember<Equation> {
+			class M_ODE : public ISysMember<RightPart> {
 				const char* sol_name()noexcept final { return "Cy"; };
 				const char* ini_spl_name()noexcept final { return "cyto4SPL"; }
 			public:
@@ -76,14 +79,14 @@ namespace StraightTask
 
 	namespace Adhesion
 	{
-		class M_ODE : public ISysMember<Equation> {
+		class M_ODE : public ISysMember<RightPart> {
 			const char* sol_name()noexcept final { return "Adhes"; };
 		};
 	}
 
 	namespace LeuMacrophags
 	{
-		class M_ODE : public ISysMember<Equation> {
+		class M_ODE : public ISysMember<RightPart> {
 			const char* sol_name()noexcept final { return "Lm"; };
 			const char* ini_spl_name()noexcept final { return "lm4SPL"; }
 		public:
@@ -93,7 +96,7 @@ namespace StraightTask
 
 	namespace LeuNeutrophils
 	{
-		class M_ODE : public ISysMember<Equation> {
+		class M_ODE : public ISysMember<RightPart> {
 			const char* sol_name()noexcept final { return "Ln"; };
 			const char* ini_spl_name()noexcept final { return "ln4SPL"; }
 		public:
@@ -105,13 +108,13 @@ namespace StraightTask
 	{
 		namespace Active
 		{
-			class M_ODE : public ISysMember<Equation> {
+			class M_ODE : public ISysMember<RightPart> {
 				const char* sol_name()noexcept final { return "Mi_active"; };
 			};
 		}
 		namespace Inactive
 		{
-			class M_ODE : public ISysMember<Equation> {
+			class M_ODE : public ISysMember<RightPart> {
 				const char* sol_name()noexcept final { return "Mi_inactive"; };
 			};
 		}

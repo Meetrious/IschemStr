@@ -1,4 +1,5 @@
-//settings for Staight test-task
+// This header constains final shells of ODE_members of the test-tasks
+
 #pragma once
 #include <tests/equations.h>
 #include <base/Settings_base.h>
@@ -20,7 +21,7 @@ namespace StraightTask
 				(this->RP.Solution(this->t_0 - this->gap_width + i * (this->gap_width / this->N))); 
 			}
 		}
-		bool is_deflecting() { return RP.is_ret; }
+		bool is_deflecting() { return this->RP.is_ret; }
 	};
 
 //---------------------------------------------------------------------------------

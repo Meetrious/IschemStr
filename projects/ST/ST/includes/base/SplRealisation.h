@@ -1,10 +1,11 @@
+/* This header constains non-member function that formulates the shape of 
+3DEG spline equations depending on initial interpolation data. // */
+
 #pragma once
-#include <fstream>
-#include <string>
 #include <iostream>
 #include <vector>
 
-
+// my lazy method that doesn't even control the oscillations that may appear 
 bool QMSmaker(
 	std::vector<std::vector<double_t>> const & exp,
 	std::vector<std::vector<double_t>> & SPL_info)

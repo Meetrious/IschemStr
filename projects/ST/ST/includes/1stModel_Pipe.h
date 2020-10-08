@@ -1,5 +1,11 @@
+/* This header serves as pre-surface shell for 1st model pipe realisation.
+ It contains the class IAggregate that lists members of ODE system
+ and the class ISolver publicly inherited in class <Method>, where presented the list of all functions required in algorythm stated in Solver.h // */
+
+// This header ends with #include<Solver.h> as for other header located on top of ST/include directory
+
 #pragma once
-#include <functional>	// поддержка полиморфных обёрток функций
+#include <functional> 
 #include <array>
 
 #include <models/1st/settings.h>

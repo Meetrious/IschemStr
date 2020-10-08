@@ -1,3 +1,5 @@
+/*This header constains the right parts of equations of ODE_system of the 1st-model //*/
+
 #pragma once
 #include <models/1st/variables.h>
 #include <base/Eq_base.h>
@@ -22,7 +24,7 @@ namespace StraightTask
 	}
 
 
-	template<typename argType> class IEquation: public IRightPart<argType>{};
+	template<typename argType> class IEqMember: public IRightPart<argType>{};
 
 	namespace Neurons
 	{
@@ -31,9 +33,9 @@ namespace StraightTask
 
 		namespace NecroticCells
 		{
-			class Equation: public IEquation<variables const&>{
+			class RightPart: public IEqMember<variables const&>{
 			public:
-				Equation() { B.insert(B.end(), 3, 0.0); ret_is = false; }
+				RightPart() { B.insert(B.end(), 3, 0.0); ret_is = false; }
 				const double_t ini_data[2] = { 0.0, 0.4 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					B[1] = p_N * u.d_ini * u.hel;
@@ -46,9 +48,9 @@ namespace StraightTask
 
 		namespace AcuteChanges
 		{
-			class Equation : public IEquation<variables const&> {
+			class RightPart : public IEqMember<variables const&> {
 			public:
-				Equation() { B.insert(B.end(), 3, 0.0); ret_is = false; }
+				RightPart() { B.insert(B.end(), 3, 0.0); ret_is = false; }
 				const double_t ini_data[2] = { 0.0, 0.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					B[1] = (1.0 - p_N) * u.d_ini * u.hel;
@@ -62,9 +64,9 @@ namespace StraightTask
 		{
 			namespace Started
 			{
-				class Equation : public IEquation<variables const&> {
+				class RightPart : public IEqMember<variables const&> {
 				public:
-					Equation() { B.insert(B.end(), 3, 0.0); ret_is = true; }
+					RightPart() { B.insert(B.end(), 3, 0.0); ret_is = true; }
 					const double_t ini_data[2] = { 0.0, 0.0 };
 					[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 						B[1] = (1.0 - p_N) * u.d_ini * u.hel;
@@ -76,9 +78,9 @@ namespace StraightTask
 
 			namespace Ended
 			{
-				class Equation : public IEquation<variables const&> {
+				class RightPart : public IEqMember<variables const&> {
 				public:
-					Equation() { B.insert(B.end(), 3, 0.0);  ret_is = true; }
+					RightPart() { B.insert(B.end(), 3, 0.0);  ret_is = true; }
 					const double_t ini_data[2] = { 0.0, 0.0 };
 					[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 						B[1] = (1.0 - p_N) * u.ret.d_12 * u.ret.hel_12;
@@ -91,9 +93,9 @@ namespace StraightTask
 
 		namespace IntactCells 
 		{
-			class Equation : public IEquation<variables const&> {
+			class RightPart : public IEqMember<variables const&> {
 			public:
-				Equation() { B.insert(B.end(), 2, 0.0); ret_is = false; }
+				RightPart() { B.insert(B.end(), 2, 0.0); ret_is = false; }
 				const double_t ini_data[2] = { 0.0, 0.6 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					B[1] = -u.d_ini * u.hel;
@@ -112,7 +114,7 @@ namespace StraightTask
 		static double_t p_xcy0 = 10.0, cy_max = 1.0, T_ = 1.0, t0 = 8.0;
 // 																						
 
-		class Psy : public IEquation<variables const &>{
+		class Psy : public IEqMember<variables const &>{
 		public:
 			[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 				return p_xcy0 * ((cy_max - u.cy) / (T_ + (u.tj / t0)));
@@ -121,9 +123,9 @@ namespace StraightTask
 
 		namespace Pro_Inflam
 		{
-			class Equation : public IEquation<variables const&> {
+			class RightPart : public IEqMember<variables const&> {
 			public:
-				Equation() { B.insert(B.end(), 6, 0.0); ret_is = false;}
+				RightPart() { B.insert(B.end(), 6, 0.0); ret_is = false;}
 				const double_t ini_data[2] = { 0.0, 0.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					B[1] = Hill(u.psy, u.mia, C_Ma, 1) * u.nec;
@@ -137,9 +139,9 @@ namespace StraightTask
 		}
 		namespace Chemotaxis
 		{
-			class Equation : public IEquation<variables const&> {
+			class RightPart : public IEqMember<variables const&> {
 			public:
-				Equation() { B.insert(B.end(), 6, 0.0); ret_is = false; }
+				RightPart() { B.insert(B.end(), 6, 0.0); ret_is = false; }
 				const double_t ini_data[2] = { 0.0, 0.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					B[1] = Hill(p_Mach, u.mia, C_Ma, 1) * u.nec;
@@ -161,9 +163,9 @@ namespace StraightTask
 					o_cy_2 = 5.0,
 					e_adh = 0.1;
 
-		class Equation : public IEquation<variables const&>{
+		class RightPart : public IEqMember<variables const&>{
 		public:
-			Equation() { B.insert(B.end(), 4, 0.0);  ret_is = false; }
+			RightPart() { B.insert(B.end(), 4, 0.0);  ret_is = false; }
 			const double_t ini_data[2] = { 0.0, 0.0 };
 			[[nodiscard]] double_t Expression(variables const& u)noexcept final{
 				B[1] = o_cy_1 * u.cy;
@@ -180,9 +182,9 @@ namespace StraightTask
 		static double_t
 			c_Lm = 2.4, p_dLm = 3.6, T_Lm = 1.0;
 			
-		class Equation : public IEquation<variables const&>{
+		class RightPart : public IEqMember<variables const&>{
 		public:
-			Equation() { B.insert(B.end(), 3, 0.0);  ret_is = true; }
+			RightPart() { B.insert(B.end(), 3, 0.0);  ret_is = true; }
 			const double_t ini_data[2] = { 0.0, 0.0 };
 			[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 				B[1] = c_Lm * u.ret.adh_24;
@@ -197,9 +199,9 @@ namespace StraightTask
 		static double_t
 			c_Ln = 2.8, p_dLn = 3.2, T_Ln = 1.0;
 
-		class Equation : public IEquation<variables const&> {
+		class RightPart : public IEqMember<variables const&> {
 		public:
-			Equation() { B.insert(B.end(), 3, 0.0); ret_is = true; }
+			RightPart() { B.insert(B.end(), 3, 0.0); ret_is = true; }
 			const double_t ini_data[2] = { 0.0, 0.0 };
 			[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 				B[1] = c_Ln * u.ret.adh_12;
@@ -218,9 +220,9 @@ namespace StraightTask
 		namespace Active
 		{
 
-			class Equation : public IEquation<variables const&> {
+			class RightPart : public IEqMember<variables const&> {
 			public:
-				Equation() { B.insert(B.end(), 4, 0.0); ret_is = false; }
+				RightPart() { B.insert(B.end(), 4, 0.0); ret_is = false; }
 				const double_t ini_data[2] = { 0.0, 0.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					B[1] = p_1 * c_A * u.ap_e * u.mii;
@@ -232,9 +234,9 @@ namespace StraightTask
 		}
 		namespace Inactive
 		{
-			class Equation : public IEquation<variables const&> {
+			class RightPart : public IEqMember<variables const&> {
 			public:
-				Equation() { B.insert(B.end(), 6, 0.0); ret_is = false; }
+				RightPart() { B.insert(B.end(), 6, 0.0); ret_is = false; }
 				const double_t ini_data[2] = { 0.0, 1.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					B[1] = -c_A * u.ap_e * u.mii;

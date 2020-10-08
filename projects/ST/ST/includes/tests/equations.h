@@ -1,3 +1,6 @@
+/*This header constains the right parts of equations of ODE_system of the 1st-model //*/
+
+
 #pragma once
 #include <tests/variables.h>
 #include <base/Eq_base.h>
@@ -7,7 +10,7 @@ namespace StraightTask
 {
 	static double_t pi = 3.14159265358979323;
 
-	template<typename argType> class IEquation: public IRightPart<argType>{};
+	template<typename argType> class IEqMember: public IRightPart<argType>{};
 
 	namespace Test
 	{
@@ -21,7 +24,7 @@ namespace StraightTask
 				if (n > 1) return n * factorial(n - 1);	else return 1;
 			}
 
-			class Exp_ret :public IEquation<variables const&>{
+			class Exp_ret :public IEqMember<variables const&>{
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					return u.ret.x_1;
 				}
@@ -43,7 +46,7 @@ namespace StraightTask
 				
 			};
 
-			class Exp :public IEquation<variables const&> {
+			class Exp :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					return u.x;
 				}
@@ -54,7 +57,7 @@ namespace StraightTask
 				double_t Solution(double_t t) noexcept final { return exp(t); }
 			};	
 
-			class Sin :public IEquation<variables const&> {
+			class Sin :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					return -k * u.ret.x_pi2 ;
 				}
@@ -70,7 +73,7 @@ namespace StraightTask
 		namespace ThreeDim
 		{
 
-			class Ox_ret :public IEquation<variables const&> {
+			class Ox_ret :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					return (2.0 / pi) * (u.x + u.ret.y_pi2) - u.ret.x_pi2 - (0.5 * pi) * (u.y / u.z);
 				}
@@ -80,7 +83,7 @@ namespace StraightTask
 				const double_t ini_data[2] = { pi,-pi };
 				const char* name = "RetSp1"; 
 			};
-			class Oy_ret :public IEquation<variables const&> {
+			class Oy_ret :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					return (2.0 / pi) * (u.y - u.ret.x_pi2) - u.ret.y_pi2 + (0.5 * pi) * (u.x / u.z);
 				}
@@ -90,7 +93,7 @@ namespace StraightTask
 				const double_t ini_data[2] = { pi, 0 };
 				const char* name = "RetSp2"; 
 			};
-			class Oz_ret :public IEquation<variables const&> {
+			class Oz_ret :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final {
 					return pow(u.ret.x_pi2 * u.ret.x_pi2 + u.ret.y_pi2 * u.ret.y_pi2, 0.5) / u.ret.z_pi2 ;
 				}
@@ -102,7 +105,7 @@ namespace StraightTask
 				
 			};
 
-			class Ox :public IEquation<variables const&> {
+			class Ox :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u) final {
 					return u.x/u.z - u.y;
 				}
@@ -112,7 +115,7 @@ namespace StraightTask
 				const double_t ini_data[2] = { pi,-pi };
 				const char* name = "Sp1"; bool deflecting = false;
 			};
-			class Oy :public IEquation<variables const&> {
+			class Oy :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u) final {
 					return u.y/u.z + u.x;
 				}
@@ -123,7 +126,7 @@ namespace StraightTask
 				const char* name = "Sp2"; bool deflecting = false;
 				
 			};
-			class Oz :public IEquation<variables const&> {
+			class Oz :public IEqMember<variables const&> {
 				[[nodiscard]] inline double_t Expression(variables const& u) final {
 					return (u.x * u.x + u.y * u.y) / (u.z * u.z);
 				}

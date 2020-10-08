@@ -1,8 +1,9 @@
+// This header contains dependent variables of the 1st-model-task.
+
 #pragma once
 
 namespace StraightTask
 {
-
 	class RetVar
 	{
 	public:

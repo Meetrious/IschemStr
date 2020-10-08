@@ -1,9 +1,16 @@
+/* This header contains non-member functions that implements surface algorythms
+ that serve to solve given straight task for various purposes:
+ i.e in order to output solution, or calculate the relative error,
+ or to count the practical order of the method on given task using Runge-method // */
+
+// This header is included in every header *_pipe.h located on top of ST/include directory
+
 #pragma once
 
 namespace StraightTask
 {
 	// Solves the straight task and outputs solution
-	void ODE_solver()
+	void ODE_solver_output()
 	{
 		// choosing num-method from StraightTask
 		Euler SYS;
@@ -24,32 +31,35 @@ namespace StraightTask
 		while (current_gap < SYS.ST.full_amount_of_gaps)
 		{
 
-			std::cout << SYS.ST.full_amount_of_gaps - current_gap << " "; // вывод на экран "кол-во промежутков, которые надо просчитать"
-			SYS.ST.X_prev = SYS.ST.X_init; // даём начальное условие на предшествующий вектор
-			Tj = SYS.ST.X_pred.tj = SYS.ST.X_prev.tj;
-			uint32_t Nj = 1;
+			std::cout << SYS.ST.full_amount_of_gaps - current_gap << " "; // outputing amount of gaps remained to process
+			SYS.ST.X_prev = SYS.ST.X_init; // previous step is defined by initial one at every begining of the gap
+			Tj = SYS.ST.X_pred.tj = SYS.ST.X_prev.tj; // synchronising the independent variable
+			uint32_t Nj = 1; // restating the number of the current step in num-method
 
 			// 1st approximations for multistep-methods
-			if (current_gap == 0) SYS.ApplyPrepStep(Nj, Tj);
+			if (current_gap == 0) SYS.ApplyPrepStep(Nj, Tj); // in one-step-methods it is void{return;}
 
 			// cycle for processing current gap in <step_method>
 			for (; Nj <= SYS.ST.N; Nj++)
 			{
-				// сдвиг на следующий шаг по времени
+				// shifting independent variable on one step further for predicted solution
 				Tj = SYS.ST.X_pred.tj += SYS.ST.H;
 
-				//setting ret-values for Tj in X_pred
+				// setting ret-values for Tj-time-moment in X_pred
 				if (SYS.is_SYS_deflecting()) SYS.RetUpload(Nj);
 
 				// контролируем промежуток интерполяции
 				//ST.X_pred.CheckShiftInterpGap(STpar);
 
-				// pushing presolved data in X_pred
-				//for (auto const& cur : SYS.SolDataGetter) { cur(current_day, Nj, SYS.ST.X_pred); }			
-				
-				SYS.SolDataGetter[3](current_gap, Nj, SYS.ST.N, SYS.ST.X_pred);
+				/* pushing presolved data in X_pred in case we want to freeze the system relatively given behaviour
+				 defined in SYS.<IAggregate_member_field>.PreSavedSolData;
+				 matrix<double_t> StraightTask::IOs SolDataGetter is a member function that does things // */
+				{
+				//for (auto const& cur : SYS.SolDataGetter) { cur(current_day, Nj, SYS.ST.X_pred); }	
 
-				//SYS.SolDataGetter[3](current_gap, Nj, SYS.ST.N, SYS.ST.X_cor); // in pred_cor scheme
+					//SYS.SolDataGetter[3](current_gap, Nj, SYS.ST.N, SYS.ST.X_pred);
+					//SYS.SolDataGetter[3](current_gap, Nj, SYS.ST.N, SYS.ST.X_cor); // in pred_cor scheme
+				}
 
 				SYS.ApplyMethod();
 
@@ -59,12 +69,15 @@ namespace StraightTask
 				// Phase trajectory output
 				//PTO.OutputPhaseTraj(Nj, Tj, { (*SYS.ST.X_sol).x, (*SYS.ST.X_sol).y, (*SYS.ST.X_sol).z });
 
-				for (auto const& cur : SYS.BudgetOutputter) { cur(Nj, Tj); }
+
+				// outputting equation budget-bricks
+				// for (auto const& cur : SYS.BudgetOutputter) { cur(Nj, Tj); }
 
 				// updating RetArray(s) pushing X_prev.value of solution
 				if (SYS.is_SYS_deflecting()) SYS.RetDataUpdate(Nj);
 
-				// обновляем предшествующий временной ряд для перехода на следующий шаг
+				// shifting X_prev next step further in one-step-methods and
+				// X[1],X[2]... next step further in multistep-methods
 				SYS.NodeShift();
 
 

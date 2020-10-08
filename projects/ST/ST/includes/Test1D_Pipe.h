@@ -1,3 +1,9 @@
+/* This header serves as pre-surface shell for 1D-test realisation.
+ It contains the class IAggregate that lists members of ODE system
+ and the class ISolver publicly inherited in class <Method>, where presented the list of all functions required in algorythm stated in Solver.h // */
+
+ // This header ends with #include<Solver.h> as for other header located on top of ST/include directory
+
 #pragma once
 #include <functional>
 #include <array>
@@ -51,7 +57,7 @@ namespace StraightTask
 
 		bool is_SYS_deflecting() { return EXP.RP.ret_is; }
 
-		void InitialiseIniData() throw(const char*) {
+		void InitialiseIniData(){
 			vector<double_t> T0s;
 			for (auto const& cur : IniDataInitialiser){
 				cur(ST.X_init); T0s.emplace_back(ST.X_init.tj);
@@ -87,13 +93,7 @@ namespace StraightTask
 		void PrepairTheTask()
 		{
 			try {
-				SYS.InitialiseIniData();
-
-				// collecting presolved solution to freeze the system relatively given behaviour
-				// for (auto const& cur : DataCollector) { cur(); } // full
-
-				// setting initial data from presolved_solution_data
-				// for (auto const& cur : SolDataGetter) { cur(0, 0, SYS.ST.X_init); } // full
+				InitialiseIniData();
 
 				if (is_SYS_deflecting())
 				{
@@ -104,11 +104,6 @@ namespace StraightTask
 					for (auto const& cur : IniRetInitialiser) { cur(ST.X_init); }
 				}
 
-				// streams for output
-				for (auto const& cur : OutStreamAllocator) { cur(); }
-
-				// outputting initial solution data
-				for (auto const& cur : SolutionOutputter) { cur(0, ST.X_init.tj, ST.X_init); }
 			}
 			catch (const char* exception) {
 				std::cerr << "WARNING:" << exception << "\n Terminating.";
@@ -117,8 +112,22 @@ namespace StraightTask
 
 		}
 
+		void PrepairTheOutput()
+		{
+			try {
 
-		
+				// streams for output
+				for (auto const& cur : OutStreamAllocator) { cur(); }
+
+				// outputting initial solution data
+				for (auto const& cur : SolutionOutputter) { cur(0, ST.X_init.tj, ST.X_init); }
+
+			}
+			catch (const char* exception) {
+				std::cerr << "WARNING:" << exception << "\n Terminating.";
+				throw(exception);
+			}
+		}
 
 		void RetUpload(uint32_t Nj) {
 			ST.X_pred.ret.x_1 = EXP.GetRetValue(ST.gap_width, Nj);
@@ -342,5 +351,4 @@ namespace StraightTask
 //==============================================================================
 
 }
-
 #include <base/Solver.h>

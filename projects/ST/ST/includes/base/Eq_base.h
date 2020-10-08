@@ -1,8 +1,6 @@
 #pragma once
 #include <vector>
 
-
-
 namespace StraightTask
 {
 	template<typename T>
