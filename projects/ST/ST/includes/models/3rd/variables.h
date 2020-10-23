@@ -1,16 +1,22 @@
 #pragma once
+#include <cstdint>
+#include <cmath>
+
+
 namespace StraightTask
 {
-
-	class RetVar
-	{
+	class RetVar{
 	public:
-		double_t adh_4 = 0;
+
+		RetVar(): adh_4{0} {}
+
+		~RetVar() = default;
+
+		double_t adh_4;
 	};
 
 //==========================================================================================================================
-	class variables
-	{
+	class variables	{
 	public:
 
 		variables() {}
@@ -19,19 +25,20 @@ namespace StraightTask
 
 		RetVar ret;
 
-		double_t tj = 0;
+		double_t tj;
 
-		double_t nec = 0, acu_c = 0, hel = 0 ;
+		double_t nec, acu_c, hel ;
 
-		double_t cy = 0, ch = 0, adh = 0 ;
-		double_t eps_s = 0, eps_w = 0;
+		double_t cy, ch, adh ;
+		double_t eps_s, eps_w;
 
-		double_t mia = 0, mii = 0, lm = 0, ln = 0;
+		double_t mia, mii, lm, ln;
 
-		double_t d_F = 0, d_ini = 0;
-		double_t dp_A = 0, dp_N = 0;
+		double_t d_F, d_ini;
 
-		uint32_t spl_gap_counter=0;
+		double_t dp_A, dp_N;
+
+		uint32_t spl_gap_counter;
 	};
 
 }

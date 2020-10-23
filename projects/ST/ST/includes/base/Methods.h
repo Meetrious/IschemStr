@@ -3,10 +3,15 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 
 namespace StraightTask
 {
+	template<typename T>
+	using vector = std::vector<T>;//*/
+
+
 
 	namespace Methods
 	{
@@ -36,7 +41,7 @@ namespace StraightTask
 
 			// the method that defines declared variables in pointer-array by values provided in file from <way> directory
 			static void SetCoefs(double_t* CoeficientsToVary[], uint16_t CFV_cap, std::string way){
-				vector<double> inCoefsVals; double_t tmp;
+				vector<double_t> inCoefsVals; double_t tmp;
 				std::ifstream in(way);
 				while (!in.eof())
 				{

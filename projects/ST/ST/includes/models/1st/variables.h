@@ -1,6 +1,8 @@
 // This header contains dependent variables of the 1st-model-task.
 
 #pragma once
+#include<cstdint>
+#include<cmath>
 
 namespace StraightTask
 {

@@ -3,11 +3,16 @@
 #include <base/Methods.h>
 #include <base/SplRealisation.h>
 
+
+#include <vector>
 #include <iomanip>
 
 
 namespace StraightTask
 {
+
+	template<typename T>
+	using matrix = vector<vector<T>>; // */
 
 	class IErr{
 	
@@ -233,7 +238,7 @@ namespace StraightTask
 		const std::string presol_data_dir()noexcept { return input_dir + "preserved_solution/" + sol_name() + ".txt"; }
 
 		// a method that outputs a name of a ODE_System member
-		virtual const char* sol_name() = 0;
+		virtual const char* sol_name()noexcept = 0;
 
 	public:
 

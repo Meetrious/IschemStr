@@ -1,27 +1,37 @@
 #pragma once
-#include <vector>
+
+#include <array>
+//#include <vector>
 
 namespace StraightTask
 {
-	template<typename T>
-	using vector = std::vector<T>;
 
-	template<typename T>
-	using matrix = vector<vector<T>>;
+	/*template<typename T>
+	using vector = std::vector<T>;*/
+
+	/*template<typename T>
+	using matrix = vector<vector<T>>;*/
 
 	template<typename argType>
 	class IRightPart
 	{
 	protected:
-		double_t Sum_B() {
+		//amount of components in RightPart of equation
+		size_t comp_amount = 9;
+
+		double_t Sum_B()
+		{
 			B[0] = 0.0;
-			for (uint16_t i = 1; i < B.size(); i++) { B[0] += B[i]; }
+			for (size_t i = 1; i <= comp_amount; i++) { B[0] += B[i]; }
 			return B[0];
 		}
 	
 	public:
-		
-		vector<double_t> B;
+		IRightPart() {}
+		~IRightPart() = default;
+
+		// an array that keeps values of components of the equation 
+		std::array<double_t, 10> B;
 
 		virtual double_t Expression(argType u) = 0;
 		bool ret_is;
