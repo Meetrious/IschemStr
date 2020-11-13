@@ -4,7 +4,6 @@ subclasses of ISolver that serve for implementations of various calculation meth
 
 #pragma once
 #include <models/3rd/settings.h>
-//#include <functional>
 
 namespace StraightTask
 {
@@ -32,15 +31,24 @@ namespace StraightTask
 		Phagocytosis::Strong::M_Sub EPS_S;
 		Phagocytosis::Weak::M_Sub EPS_W;
 
+		std::array<std::function<void(variables&)>, 5> SubValAssigner = {
+			[&](variables& X)->void {X.d_F = DF.RP.Expression(X); },
+			[&](variables& X)->void {X.dp_A = DP_A.RP.Expression(X); },
+			[&](variables& X)->void {X.dp_N = DP_N.RP.Expression(X); },
+			[&](variables& X)->void {X.eps_s = EPS_S.RP.Expression(X); },
+			[&](variables& X)->void {X.eps_w = EPS_W.RP.Expression(X); }
+		};
 	};
 }
 
 /* including all common instruments stated in ISolver template class;
 it is compulsory that IAggregate class is defined above this include directive */
+#pragma once
 #include<base/Solver_base.h>
 
 namespace StraightTask
 {
+
 
 #define	T_Func(RETURN_TYPE)\
 template<typename Method>\
@@ -48,20 +56,20 @@ RETURN_TYPE ISolver<Method>::
 
 
 	T_Func(void)RetUpload(uint32_t Nj) {
-		ST.X_pred.ret.adh_4 = ADH.GetRetValue(4.0, Nj);
+		Mthd.X_pred.ret.adh_4 = ADH.GetRetValue(4.0, Nj);
 	}
 
 	T_Func(void)RetDataUpdate(uint32_t Nj) {
-		ADH.ShiftRets(Nj, ST.X_prev.adh);// */
+		ADH.ShiftRets(Nj, Mthd.X_prev.adh);// */
 	}
 
 	T_Func(void)CollectData() {
 
 		NEC.CollectSolData();
 		AC.CollectSolData();
-		HEL.CollectSolData();
+		HEL.CollectSolData(); //*/
 
-		CY.CollectSolData();
+		//CY.CollectSolData();
 		ADH.CollectSolData();
 
 		LM.CollectSolData();
@@ -69,71 +77,71 @@ RETURN_TYPE ISolver<Method>::
 		MIA.CollectSolData();
 		MII.CollectSolData();
 
-		DF.CollectSolData();
-		EPS_S.CollectSolData();
+		//DF.CollectSolData();
+		//EPS_S.CollectSolData(); //*/
 	}
 
-	T_Func(void)SetIniData(vector<double_t>& T0s) {
+	T_Func(void)SetIniData(vector<float_t>& T0s) {
 
 		T0s.clear();
 
-		NEC.GetInitialData(ST.X_init.tj, ST.X_init.nec); T0s.emplace_back(ST.X_init.tj);
-		AC.GetInitialData(ST.X_init.tj, ST.X_init.acu_c);  T0s.emplace_back(ST.X_init.tj);
-		HEL.GetInitialData(ST.X_init.tj, ST.X_init.hel);  T0s.emplace_back(ST.X_init.tj);
+		NEC.GetInitialData(Mthd.X_init.tj, Mthd.X_init.nec); T0s.emplace_back(Mthd.X_init.tj);
+		AC.GetInitialData(Mthd.X_init.tj, Mthd.X_init.acu_c);  T0s.emplace_back(Mthd.X_init.tj);
+		HEL.GetInitialData(Mthd.X_init.tj, Mthd.X_init.hel);  T0s.emplace_back(Mthd.X_init.tj);
 
-		CY.GetInitialData(ST.X_init.tj, ST.X_init.cy);  T0s.emplace_back(ST.X_init.tj);
-		ADH.GetInitialData(ST.X_init.tj, ST.X_init.adh);  T0s.emplace_back(ST.X_init.tj);
+		CY.GetInitialData(Mthd.X_init.tj, Mthd.X_init.cy);  T0s.emplace_back(Mthd.X_init.tj);
+		ADH.GetInitialData(Mthd.X_init.tj, Mthd.X_init.adh);  T0s.emplace_back(Mthd.X_init.tj);
 
-		LM.GetInitialData(ST.X_init.tj, ST.X_init.lm);  T0s.emplace_back(ST.X_init.tj);
-		LN.GetInitialData(ST.X_init.tj, ST.X_init.ln);  T0s.emplace_back(ST.X_init.tj);
+		LM.GetInitialData(Mthd.X_init.tj, Mthd.X_init.lm);  T0s.emplace_back(Mthd.X_init.tj);
+		LN.GetInitialData(Mthd.X_init.tj, Mthd.X_init.ln);  T0s.emplace_back(Mthd.X_init.tj);
 
-		MIA.GetInitialData(ST.X_init.tj, ST.X_init.mia);  T0s.emplace_back(ST.X_init.tj);
-		MII.GetInitialData(ST.X_init.tj, ST.X_init.mii);  T0s.emplace_back(ST.X_init.tj);
+		MIA.GetInitialData(Mthd.X_init.tj, Mthd.X_init.mia);  T0s.emplace_back(Mthd.X_init.tj);
+		MII.GetInitialData(Mthd.X_init.tj, Mthd.X_init.mii);  T0s.emplace_back(Mthd.X_init.tj);
 	}
 
-	T_Func(void)SetIniDataFromOutside(vector<double_t>& T0s) {
+	T_Func(void)SetIniDataFromOutside(vector<float_t>& T0s) {
 
 		T0s.clear();
 
-		NEC.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.nec);  T0s.emplace_back(ST.X_init.tj);
-		AC.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.acu_c); T0s.emplace_back(ST.X_init.tj);
-		HEL.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.hel); T0s.emplace_back(ST.X_init.tj);
+		NEC.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.nec);  T0s.emplace_back(Mthd.X_init.tj);
+		AC.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.acu_c); T0s.emplace_back(Mthd.X_init.tj);
+		HEL.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.hel); T0s.emplace_back(Mthd.X_init.tj);
 
-		CY.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.cy); T0s.emplace_back(ST.X_init.tj);
-		ADH.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.adh); T0s.emplace_back(ST.X_init.tj);
+		CY.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.cy); T0s.emplace_back(Mthd.X_init.tj);
+		ADH.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.adh); T0s.emplace_back(Mthd.X_init.tj);
 
-		LM.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.lm); T0s.emplace_back(ST.X_init.tj);
-		LN.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.ln); T0s.emplace_back(ST.X_init.tj);
+		LM.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.lm); T0s.emplace_back(Mthd.X_init.tj);
+		LN.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.ln); T0s.emplace_back(Mthd.X_init.tj);
 
-		MIA.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.mia); T0s.emplace_back(ST.X_init.tj);
-		MII.GetInitialDataFromOutside(ST.X_init.tj, ST.X_init.mii); T0s.emplace_back(ST.X_init.tj);
+		MIA.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.mia); T0s.emplace_back(Mthd.X_init.tj);
+		MII.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.mii); T0s.emplace_back(Mthd.X_init.tj);
 	}
 
 	T_Func(void)InitialiseRetArrays() {
-		ADH.StateRetArray(ST.N, ST.t_0, ST.gap_width);
+		ADH.StateRetArray(Mthd.N, Mthd.t_0, Mthd.gap_width);
 	}
 
 	T_Func(void)InitialiseIniRetValues() {
-		ST.X_init.ret.adh_4 = ADH.GetRetValue(4.0, 0);
+		Mthd.X_init.ret.adh_4 = ADH.GetRetValue(4.0, 0);
 	}
 
-	T_Func(void)AssignSolData(uint16_t day, uint32_t Nj, variables& X) {
+	T_Func(void)AssignSolData(uint16_t gap, uint32_t Nj, variables& X) {
 
-		X.nec = NEC.GetSolData(day, Nj, ST.N);
-		X.acu_c = AC.GetSolData(day, Nj, ST.N);
-		X.hel = HEL.GetSolData(day, Nj, ST.N);
+		X.nec = NEC.GetSolData(gap, Nj, Mthd.N);
+		X.acu_c = AC.GetSolData(gap, Nj, Mthd.N);
+		X.hel = HEL.GetSolData(gap, Nj, Mthd.N); //*/
 
-		X.cy = CY.GetSolData(day, Nj, ST.N);
-		X.adh = ADH.GetSolData(day, Nj, ST.N);
+		//X.cy = CY.GetSolData(gap, Nj, Mthd.N);
+		X.adh = ADH.GetSolData(gap, Nj, Mthd.N);
 
-		X.lm = LM.GetSolData(day, Nj, ST.N);
-		X.ln = LN.GetSolData(day, Nj, ST.N);
+		X.lm = LM.GetSolData(gap, Nj, Mthd.N);
+		X.ln = LN.GetSolData(gap, Nj, Mthd.N);
 
-		X.mia = MIA.GetSolData(day, Nj, ST.N);
-		X.mii = MII.GetSolData(day, Nj, ST.N);
+		X.mia = MIA.GetSolData(gap, Nj, Mthd.N);
+		X.mii = MII.GetSolData(gap, Nj, Mthd.N);
 
-		X.d_F = DF.GetSolData(day, Nj, ST.N);
-		X.eps_s = EPS_S.GetSolData(day, Nj, ST.N);
+		//X.d_F = DF.GetSolData(gap, Nj, Mthd.N);
+		//X.eps_s = EPS_S.GetSolData(gap, Nj, Mthd.N); // */
 	}
 
 	T_Func(void)ExpressSubValues(variables& X) {
@@ -166,7 +174,7 @@ RETURN_TYPE ISolver<Method>::
 		EPS_W.AllocateOutputStreams(); // 14 */
 	}
 
-	T_Func(void)OutputSolution(uint32_t Nj, double_t Tj, variables const& X) {
+	T_Func(void)OutputSolution(uint32_t Nj, float_t Tj, variables const& X) {
 
 		NEC.OutputSol(Nj, Tj, X.nec);
 		AC.OutputSol(Nj, Tj, X.acu_c);
@@ -189,7 +197,7 @@ RETURN_TYPE ISolver<Method>::
 
 	}
 
-	T_Func(void)OutputBudgets(uint32_t Nj, double_t Tj) {
+	T_Func(void)OutputBudgets(uint32_t Nj, float_t Tj) {
 
 		NEC.OutputBuds(Nj, Tj);
 		AC.OutputBuds(Nj, Tj);
@@ -209,6 +217,25 @@ RETURN_TYPE ISolver<Method>::
 
 	}
 
+	T_Func(void)DeallocateOutputStreams() {
+		NEC.DeallocateOutputStreams();
+		AC.DeallocateOutputStreams();
+		HEL.DeallocateOutputStreams();
+
+		CY.DeallocateOutputStreams();
+		ADH.DeallocateOutputStreams();
+		LM.DeallocateOutputStreams();
+		LN.DeallocateOutputStreams();
+		MIA.DeallocateOutputStreams();
+		MII.DeallocateOutputStreams();
+
+		DF.DeallocateOutputStreams();
+		DP_N.DeallocateOutputStreams();
+		DP_A.DeallocateOutputStreams();
+		EPS_S.DeallocateOutputStreams();
+		EPS_W.DeallocateOutputStreams(); // 14 */
+	}
+
 	T_Func(bool)is_SYS_deflecting() {
 		bool if_ret = NEC.RP.ret_is + AC.RP.ret_is + HEL.RP.ret_is +
 			CY.RP.ret_is + ADH.RP.ret_is + LM.RP.ret_is + LN.RP.ret_is +
@@ -221,121 +248,296 @@ RETURN_TYPE ISolver<Method>::
 
 	class Euler : public ISolver<Methods::Euler> {
 	public:
-		Euler() { ST.X_sol = &ST.X_pred; }
+		Euler() { Mthd.X_sol = &Mthd.X_pred; }
+
 		void ApplyMethod() final {
-			ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.Predictor(ST.X_prev.adh, ADH.RP);
+			/*Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_prev.hel, HEL.RP);//*/
 
-			ST.X_pred.lm = ST.Predictor(ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.Predictor(ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_prev.cy, CY.RP);
+			/*Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.mia = ST.Predictor(ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.Predictor(ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_prev.ln, LN.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_prev.mii, MII.RP);//*/
+
+			ExpressSubValues(Mthd.X_pred);// */
 		}
+
+		void AplMethod(size_t Ni) final {
+
+#define ToReplicateOrToSolve(NUM, MEMBER, VAL)\
+	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
+	else AplMeth[NUM]()
+
+			ToReplicateOrToSolve(0, NEC, nec);
+			ToReplicateOrToSolve(1, AC, acu_c);
+			ToReplicateOrToSolve(2, HEL, hel);
+
+			ToReplicateOrToSolve(3, CY, cy);
+			ToReplicateOrToSolve(4, ADH, adh);
+			
+			ToReplicateOrToSolve(5, LM, lm);
+			ToReplicateOrToSolve(6, LN, ln);
+
+			ToReplicateOrToSolve(7, MIA, mia);
+			ToReplicateOrToSolve(8, MII, mii);
+
+#undef ToReplicateOrToSolve
+
+#define ToReplicateOrToGetReal(NUM, MEMBER, VAL)\
+	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
+	else SubValAssigner[NUM](Mthd.X_pred)
+
+			ToReplicateOrToGetReal(0, DF, d_F);
+			ToReplicateOrToGetReal(1, DP_A, dp_A);
+			ToReplicateOrToGetReal(2, DP_N, dp_N);
+			ToReplicateOrToGetReal(3, EPS_S, eps_s);
+			ToReplicateOrToGetReal(4, EPS_W, eps_w);
+
+#undef ToReplicateOrToGetReal
+		}
+
+
+	private:
+		std::array<std::function<void()>, 9> AplMeth = {
+			[&]() -> void { Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_prev.nec, NEC.RP); },
+			[&]() -> void { Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_prev.acu_c, AC.RP); },
+			[&]() -> void { Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_prev.hel, HEL.RP); },
+
+			[&]() -> void { Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_prev.cy, CY.RP); },
+			[&]() -> void { Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_prev.adh, ADH.RP); },
+
+			[&]() -> void { Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_prev.lm , LM.RP); },
+			[&]() -> void { Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_prev.ln , LN.RP); },
+
+			[&]() -> void { Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_prev.mia , MIA.RP); },
+			[&]() -> void { Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_prev.mii , MII.RP); }
+		};
+
 
 	};
 
 	class PredCor : public ISolver<Methods::ModEuler>
 	{
 	public:
-		PredCor() { ST.X_sol = &ST.X_cor; }
+		PredCor() { Mthd.X_sol = &Mthd.X_cor; }
 		void ApplyMethod() final
 		{
 			ApplyEuler();
 
-			ST.X_cor.tj = ST.X_pred.tj;
-			ST.X_cor.ret = ST.X_pred.ret;
+			Mthd.X_cor.tj = Mthd.X_pred.tj;
+			Mthd.X_cor.ret = Mthd.X_pred.ret;
 
-			ST.X_cor.nec = ST.Corrector(ST.X_prev.nec, NEC.RP);
-			ST.X_cor.acu_c = ST.Corrector(ST.X_prev.acu_c, AC.RP);
-			ST.X_cor.hel = ST.Corrector(ST.X_prev.hel, HEL.RP);
+			Mthd.X_cor.nec = Mthd.Corrector(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_cor.acu_c = Mthd.Corrector(Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_cor.hel = Mthd.Corrector(Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_cor.cy = ST.Corrector(ST.X_prev.cy, CY.RP);
-			ST.X_cor.adh = ST.Corrector(ST.X_prev.adh, ADH.RP);
+			Mthd.X_cor.cy = Mthd.Corrector(Mthd.X_prev.cy, CY.RP);
+			Mthd.X_cor.adh = Mthd.Corrector(Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_cor.lm = ST.Corrector(ST.X_prev.lm, LM.RP);
-			ST.X_cor.ln = ST.Corrector(ST.X_prev.ln, LN.RP);
+			Mthd.X_cor.lm = Mthd.Corrector(Mthd.X_prev.lm, LM.RP);
+			Mthd.X_cor.ln = Mthd.Corrector(Mthd.X_prev.ln, LN.RP);
 
-			ST.X_cor.mia = ST.Corrector(ST.X_prev.mia, MIA.RP);
-			ST.X_cor.mii = ST.Corrector(ST.X_prev.mii, MII.RP);
+			Mthd.X_cor.mia = Mthd.Corrector(Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_cor.mii = Mthd.Corrector(Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_cor);
+			ExpressSubValues(Mthd.X_cor);
 		}
+
+		void AplMethod(size_t Ni) final {
+
+#define ToReplicateOrToSolve(NUM, MEMBER, VAL)\
+	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
+	else PredAssigner[NUM]()
+
+			ToReplicateOrToSolve(0, NEC, nec);
+			ToReplicateOrToSolve(1, AC, acu_c);
+			ToReplicateOrToSolve(2, HEL, hel);
+
+			ToReplicateOrToSolve(3, CY, cy);
+			ToReplicateOrToSolve(4, ADH, adh);
+
+			ToReplicateOrToSolve(5, LM, lm);
+			ToReplicateOrToSolve(6, LN, ln);
+
+			ToReplicateOrToSolve(7, MIA, mia);
+			ToReplicateOrToSolve(8, MII, mii);
+#undef ToReplicateOrToSolve
+
+#define ToReplicateOrToGetReal(NUM, MEMBER, VAL)\
+	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
+	else SubValAssigner[NUM](Mthd.X_pred)
+
+			ToReplicateOrToGetReal(0, DF, d_F);
+			ToReplicateOrToGetReal(1, DP_A, dp_A);
+			ToReplicateOrToGetReal(2, DP_N, dp_N);
+			ToReplicateOrToGetReal(3, EPS_S, eps_s);
+			ToReplicateOrToGetReal(4, EPS_W, eps_w);
+
+#undef ToReplicateOrToGetReal
+
+			Mthd.X_cor.tj = Mthd.X_pred.tj;
+			Mthd.X_cor.ret = Mthd.X_pred.ret;
+
+#define ToReplicateOrToSolve(NUM, STEP, MEMBER, VAL)\
+	if (MEMBER.isCurrentlyPreSolved){}\
+	else CorAssigner[NUM]()
+
+			ToReplicateOrToSolve(0, Ni, NEC, nec);
+			ToReplicateOrToSolve(1, Ni, AC, acu_c);
+			ToReplicateOrToSolve(2, Ni, HEL, hel);
+
+			ToReplicateOrToSolve(3, Ni, CY, cy);
+			ToReplicateOrToSolve(4, Ni, ADH, adh);
+
+			ToReplicateOrToSolve(5, Ni, LM, lm);
+			ToReplicateOrToSolve(6, Ni, LN, ln);
+
+			ToReplicateOrToSolve(7, Ni, MIA, mia);
+			ToReplicateOrToSolve(8, Ni, MII, mii);
+#undef ToReplicateOrToSolve
+
+#define ToReplicateOrToGetReal(NUM, MEMBER, VAL)\
+	if (MEMBER.isCurrentlyPreSolved){}\
+	else SubValAssigner[NUM](Mthd.X_cor)
+
+			ToReplicateOrToGetReal(0, DF, d_F);
+			ToReplicateOrToGetReal(1, DP_A, dp_A);
+			ToReplicateOrToGetReal(2, DP_N, dp_N);
+			ToReplicateOrToGetReal(3, EPS_S, eps_s);
+			ToReplicateOrToGetReal(4, EPS_W, eps_w);
+
+#undef ToReplicateOrToGetReal
+
+
+		}
+
+		
 
 	private:
 		void ApplyEuler() {
-			ST.X_pred.nec = ST.Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.Predictor(ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.Predictor(ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.Predictor(ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.Predictor(ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.Predictor(ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.Predictor(ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.Predictor(ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
+
+		std::array<std::function<void()>, 9> PredAssigner = {
+			[&]() -> void {	Mthd.X_cor.nec = Mthd.Corrector(Mthd.X_prev.nec, NEC.RP); },
+			[&]() -> void { Mthd.X_cor.acu_c = Mthd.Corrector(Mthd.X_prev.acu_c, AC.RP); },
+			[&]() -> void { Mthd.X_cor.hel = Mthd.Corrector(Mthd.X_prev.hel, HEL.RP); },
+
+			[&]() -> void { Mthd.X_cor.cy = Mthd.Corrector(Mthd.X_prev.cy, CY.RP); },
+			[&]() -> void { Mthd.X_cor.adh = Mthd.Corrector(Mthd.X_prev.adh, ADH.RP); },
+
+			[&]() -> void { Mthd.X_cor.lm = Mthd.Corrector(Mthd.X_prev.lm, LM.RP); },
+			[&]() -> void { Mthd.X_cor.ln = Mthd.Corrector(Mthd.X_prev.ln, LN.RP); },
+
+			[&]() -> void { Mthd.X_cor.mia = Mthd.Corrector(Mthd.X_prev.mia, MIA.RP); },
+			[&]() -> void { Mthd.X_cor.mii = Mthd.Corrector(Mthd.X_prev.mii, MII.RP); },
+		};
+		
+		std::array<std::function<void()>, 9> CorAssigner = {
+
+			[&]() -> void {Mthd.X_cor.nec = Mthd.Corrector(Mthd.X_prev.nec, NEC.RP); },
+			[&]() -> void {Mthd.X_cor.acu_c = Mthd.Corrector(Mthd.X_prev.acu_c, AC.RP); },
+			[&]() -> void {Mthd.X_cor.hel = Mthd.Corrector(Mthd.X_prev.hel, HEL.RP); },
+
+			[&]() -> void {Mthd.X_cor.cy = Mthd.Corrector(Mthd.X_prev.cy, CY.RP); },
+			[&]() -> void {Mthd.X_cor.adh = Mthd.Corrector(Mthd.X_prev.adh, ADH.RP);},
+
+			[&]() -> void {Mthd.X_cor.lm = Mthd.Corrector(Mthd.X_prev.lm, LM.RP);},
+			[&]() -> void {Mthd.X_cor.ln = Mthd.Corrector(Mthd.X_prev.ln, LN.RP);},
+
+			[&]() -> void {Mthd.X_cor.mia = Mthd.Corrector(Mthd.X_prev.mia, MIA.RP);},
+			[&]() -> void {Mthd.X_cor.mii = Mthd.Corrector(Mthd.X_prev.mii, MII.RP);}
+		};
+
+
+
 	};
 
 	class RunKut : public ISolver<Methods::RunKut4> {
 	public:
-		RunKut() { *ST.X_sol = ST.X_pred; }
+		RunKut() { *Mthd.X_sol = Mthd.X_pred; }
 		void ApplyMethod() final
 		{
-			ST.X_sub = ST.X_prev;
+			Mthd.X_sub = Mthd.X_prev;
 
-			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_sub.acu_c, Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_sub.hel, Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_sub.cy, Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_sub.adh, Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.Predictor(ST.X_sub.ln, ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_sub.lm, Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_sub.ln, Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.Predictor(ST.X_sub.mia, ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.Predictor(ST.X_sub.mii, ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred); // */
+			ExpressSubValues(Mthd.X_pred); // */
 		}
+	private:
+	
+		std::array<std::function<void()>, 9> AplMeth = {
+			[&]() -> void {Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP); },
+			[&]() -> void {	Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_sub.acu_c, Mthd.X_prev.acu_c, AC.RP); },
+			[&]() -> void {	Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_sub.hel, Mthd.X_prev.hel, HEL.RP); },
+
+			[&]() -> void {	Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_sub.cy, Mthd.X_prev.cy, CY.RP); },
+			[&]() -> void {	Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_sub.adh, Mthd.X_prev.adh, ADH.RP); },
+
+			[&]() -> void {	Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_sub.lm, Mthd.X_prev.lm, LM.RP); },
+			[&]() -> void {	Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_sub.ln, Mthd.X_prev.ln, LN.RP); },
+
+			[&]() -> void {	Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP); },
+			[&]() -> void {	Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP); }
+		};
+
 	};
 
 	template<typename Method>
 	class IMultistepMethod : public ISolver<Method>{
 
 	public:
-		void ApplyPrepStep(uint32_t& Nj, double_t& Tj) final {
-			for (; Nj < this->ST.X.size(); Nj++)
+		void ApplyPrepStep(uint32_t& Nj, float_t& Tj) final {
+			for (; Nj < this->Mthd.X.size(); Nj++)
 			{
 				// shifting independent variable on one step further for predicted solution
-				Tj = this->ST.X_pred.tj += this->ST.H;
+				Tj = this->Mthd.X_pred.tj += this->Mthd.H;
 
 				// setting ret-values for Tj-time-moment in X_pred
 				if (this->is_SYS_deflecting()) this->RetUpload(Nj);
 
 				this->ApplyPrepMethod();
 
-				this->ST.X[Nj] = this->ST.X_pred;
+				this->Mthd.X[Nj] = this->Mthd.X_pred;
 
 				// outputting solution in current Tj - time-moment
-				this->OutputSolution(Nj, Tj, this->ST.X_pred);
+				this->OutputSolution(Nj, Tj, this->Mthd.X_pred);
 
 				// updating RetArray(s) pushing X_prev.value of solution
 				this->RetDataUpdate(Nj);
 
 				// shifting X_prev next step further in one-step-methods and
-				this->ST.X_prev = this->ST.X_pred;
+				this->Mthd.X_prev = this->Mthd.X_pred;
 			}
 		}
 	
@@ -344,193 +546,193 @@ RETURN_TYPE ISolver<Method>::
 	class Gear : public IMultistepMethod<Methods::RKGear> {
 
 	public:
-		Gear() { *ST.X_sol = ST.X_cor; }
+		Gear() { *Mthd.X_sol = Mthd.X_cor; }
 
 		void ApplyMethod() final
 		{
 			ApplyPred();
 
-			ST.X_cor.tj = ST.X_pred.tj;
-			ST.X_cor.ret = ST.X_pred.ret;
+			Mthd.X_cor.tj = Mthd.X_pred.tj;
+			Mthd.X_cor.ret = Mthd.X_pred.ret;
 
-			ST.X_cor.nec = ST.Corrector(ST.X[1].nec, ST.X[2].nec, ST.X[3].nec, ST.X_prev.nec, NEC.RP);
-			ST.X_cor.acu_c = ST.Corrector(ST.X[1].acu_c, ST.X[2].acu_c, ST.X[3].acu_c, ST.X_prev.acu_c, AC.RP);
+			Mthd.X_cor.nec = Mthd.Corrector(Mthd.X[1].nec, Mthd.X[2].nec, Mthd.X[3].nec, Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_cor.acu_c = Mthd.Corrector(Mthd.X[1].acu_c, Mthd.X[2].acu_c, Mthd.X[3].acu_c, Mthd.X_prev.acu_c, AC.RP);
 
-			ST.X_cor.hel = ST.Corrector(ST.X[1].hel, ST.X[2].hel, ST.X[3].hel, ST.X_prev.hel, HEL.RP);
+			Mthd.X_cor.hel = Mthd.Corrector(Mthd.X[1].hel, Mthd.X[2].hel, Mthd.X[3].hel, Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_cor.cy = ST.Corrector(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
-			ST.X_cor.adh = ST.Corrector(ST.X[1].adh, ST.X[2].adh, ST.X[3].adh, ST.X_prev.adh, ADH.RP);
+			Mthd.X_cor.cy = Mthd.Corrector(Mthd.X[1].cy, Mthd.X[2].cy, Mthd.X[3].cy, Mthd.X_prev.cy, CY.RP);
+			Mthd.X_cor.adh = Mthd.Corrector(Mthd.X[1].adh, Mthd.X[2].adh, Mthd.X[3].adh, Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_cor.lm = ST.Corrector(ST.X[1].lm, ST.X[2].lm, ST.X[3].lm, ST.X_prev.lm, LM.RP);
-			ST.X_cor.ln = ST.Corrector(ST.X[1].ln, ST.X[2].ln, ST.X[3].ln, ST.X_prev.ln, LN.RP);
+			Mthd.X_cor.lm = Mthd.Corrector(Mthd.X[1].lm, Mthd.X[2].lm, Mthd.X[3].lm, Mthd.X_prev.lm, LM.RP);
+			Mthd.X_cor.ln = Mthd.Corrector(Mthd.X[1].ln, Mthd.X[2].ln, Mthd.X[3].ln, Mthd.X_prev.ln, LN.RP);
 
-			ST.X_cor.mia = ST.Corrector(ST.X[1].mia, ST.X[2].mia, ST.X[3].mia, ST.X_prev.mia, MIA.RP);
-			ST.X_cor.mii = ST.Corrector(ST.X[1].mii, ST.X[2].mii, ST.X[3].mii, ST.X_prev.mii, MII.RP);
+			Mthd.X_cor.mia = Mthd.Corrector(Mthd.X[1].mia, Mthd.X[2].mia, Mthd.X[3].mia, Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_cor.mii = Mthd.Corrector(Mthd.X[1].mii, Mthd.X[2].mii, Mthd.X[3].mii, Mthd.X_prev.mii, MII.RP);
 
-			ST.X_cor.ret = ST.X_pred.ret; // in case of emergency to update ret-values on X_cor, but what no earth for
+			//Mthd.X_cor.ret = Mthd.X_pred.ret; // in case of emergency to update ret-values on X_cor, but what no earth for
 
-			ExpressSubValues(ST.X_cor);
+			ExpressSubValues(Mthd.X_cor);
 		}
 
 		void NodeShift() final {
-			ST.X[1] = ST.X[2]; ST.X[2] = ST.X[3];
-			ST.X[3] = ST.X_prev; ST.X_prev = *ST.X_sol;
+			Mthd.X[1] = Mthd.X[2]; Mthd.X[2] = Mthd.X[3];
+			Mthd.X[3] = Mthd.X_prev; Mthd.X_prev = *Mthd.X_sol;
 		}
 
 	private:
 		void ApplyPred() {
-			ST.X_pred.nec = ST.GPred(ST.X[1].nec, ST.X[2].nec, ST.X[3].nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.GPred(ST.X[1].acu_c, ST.X[2].acu_c, ST.X[3].acu_c, ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.GPred(ST.X[1].hel, ST.X[2].hel, ST.X[3].hel, ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.GPred(Mthd.X[1].nec, Mthd.X[2].nec, Mthd.X[3].nec, Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.GPred(Mthd.X[1].acu_c, Mthd.X[2].acu_c, Mthd.X[3].acu_c, Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.GPred(Mthd.X[1].hel, Mthd.X[2].hel, Mthd.X[3].hel, Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.GPred(ST.X[1].cy, ST.X[2].cy, ST.X[3].cy, ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.GPred(ST.X[1].adh, ST.X[2].adh, ST.X[3].adh, ST.X_prev.adh, ADH.RP);
-			ST.X_pred.lm = ST.GPred(ST.X[1].lm, ST.X[2].lm, ST.X[3].lm, ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.GPred(ST.X[1].ln, ST.X[2].ln, ST.X[3].ln, ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.cy = Mthd.GPred(Mthd.X[1].cy, Mthd.X[2].cy, Mthd.X[3].cy, Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.GPred(Mthd.X[1].adh, Mthd.X[2].adh, Mthd.X[3].adh, Mthd.X_prev.adh, ADH.RP);
+			Mthd.X_pred.lm = Mthd.GPred(Mthd.X[1].lm, Mthd.X[2].lm, Mthd.X[3].lm, Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.GPred(Mthd.X[1].ln, Mthd.X[2].ln, Mthd.X[3].ln, Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.GPred(ST.X[1].mia, ST.X[2].mia, ST.X[3].mia, ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.GPred(ST.X[1].mii, ST.X[2].mii, ST.X[3].mii, ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.GPred(Mthd.X[1].mia, Mthd.X[2].mia, Mthd.X[3].mia, Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.GPred(Mthd.X[1].mii, Mthd.X[2].mii, Mthd.X[3].mii, Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
 
 		void ApplyPrepMethod() final {
-			ST.X_sub = ST.X_prev;
+			Mthd.X_sub = Mthd.X_prev;
 
-			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_sub.acu_c, Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_sub.hel, Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_sub.cy, Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_sub.adh, Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.Predictor(ST.X_sub.ln, ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_sub.lm, Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_sub.ln, Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.Predictor(ST.X_sub.mia, ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.Predictor(ST.X_sub.mii, ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
 	};
 
 	class Adams : public IMultistepMethod<Methods::Adams> {
 	public:
-		Adams() { ST.X_sol = &ST.X_pred; }
+		Adams() { Mthd.X_sol = &Mthd.X_pred; }
 
 		void ApplyMethod() {
-			ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.A_Predictor(ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.A_Predictor(ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.A_Predictor(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.A_Predictor(Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.A_Predictor(Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.A_Predictor(ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.A_Predictor(ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.A_Predictor(Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.A_Predictor(Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.A_Predictor(ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.A_Predictor(ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.A_Predictor(Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.A_Predictor(Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.A_Predictor(ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.A_Predictor(ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.A_Predictor(Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.A_Predictor(Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
 
 		void NodeShift() final {
-			ST.X[1] = ST.X[2]; ST.X[2] = ST.X[3];
-			ST.X[3] = ST.X_prev; ST.X_prev = *ST.X_sol;
+			Mthd.X[1] = Mthd.X[2]; Mthd.X[2] = Mthd.X[3];
+			Mthd.X[3] = Mthd.X_prev; Mthd.X_prev = *Mthd.X_sol;
 		}
 
 	private:
 		void ApplyPrepMethod() final
 		{
-			ST.X_sub = ST.X_prev;
+			Mthd.X_sub = Mthd.X_prev;
 
-			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_sub.acu_c, Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_sub.hel, Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_sub.cy, Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_sub.adh, Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.Predictor(ST.X_sub.ln, ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_sub.lm, Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_sub.ln, Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.Predictor(ST.X_sub.mia, ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.Predictor(ST.X_sub.mii, ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
 
 	};
 
 	class ABM : public IMultistepMethod<Methods::ABM> {
 	public:
-		ABM() { ST.X_sol = &ST.X_cor; }
+		ABM() { Mthd.X_sol = &Mthd.X_cor; }
 
 		void ApplyMethod() final
 		{
 			ApplyAdams();
 
-			ST.X_cor.tj = ST.X_pred.tj;
-			ST.X_cor.ret = ST.X_pred.ret;
+			Mthd.X_cor.tj = Mthd.X_pred.tj;
+			Mthd.X_cor.ret = Mthd.X_pred.ret;
 
-			ST.X_cor.nec = ST.A_Corrector(ST.X_prev.nec, NEC.RP);
-			ST.X_cor.acu_c = ST.A_Corrector(ST.X_prev.acu_c, AC.RP);
-			ST.X_cor.hel = ST.A_Corrector(ST.X_prev.hel, HEL.RP);
+			Mthd.X_cor.nec = Mthd.A_Corrector(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_cor.acu_c = Mthd.A_Corrector(Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_cor.hel = Mthd.A_Corrector(Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_cor.cy = ST.A_Corrector(ST.X_prev.cy, CY.RP);
-			ST.X_cor.adh = ST.A_Corrector(ST.X_prev.adh, ADH.RP);
+			Mthd.X_cor.cy = Mthd.A_Corrector(Mthd.X_prev.cy, CY.RP);
+			Mthd.X_cor.adh = Mthd.A_Corrector(Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_cor.lm = ST.A_Corrector(ST.X_prev.lm, LM.RP);
-			ST.X_cor.ln = ST.A_Corrector(ST.X_prev.ln, LN.RP);
+			Mthd.X_cor.lm = Mthd.A_Corrector(Mthd.X_prev.lm, LM.RP);
+			Mthd.X_cor.ln = Mthd.A_Corrector(Mthd.X_prev.ln, LN.RP);
 
-			ST.X_cor.mia = ST.A_Corrector(ST.X_prev.mia, MIA.RP);
-			ST.X_cor.mii = ST.A_Corrector(ST.X_prev.mii, MII.RP);
+			Mthd.X_cor.mia = Mthd.A_Corrector(Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_cor.mii = Mthd.A_Corrector(Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_cor);
+			ExpressSubValues(Mthd.X_cor);
 		}
 
 		void NodeShift() final {
-			ST.X[1] = ST.X[2]; ST.X[2] = ST.X[3];
-			ST.X[3] = ST.X_prev; ST.X_prev = *ST.X_sol;
+			Mthd.X[1] = Mthd.X[2]; Mthd.X[2] = Mthd.X[3];
+			Mthd.X[3] = Mthd.X_prev; Mthd.X_prev = *Mthd.X_sol;
 		}
 
 	private:
 		void ApplyAdams() {
-			ST.X_pred.nec = ST.A_Predictor(ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.A_Predictor(ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.A_Predictor(ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.A_Predictor(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.A_Predictor(Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.A_Predictor(Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.A_Predictor(ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.A_Predictor(ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.A_Predictor(Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.A_Predictor(Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.A_Predictor(ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.A_Predictor(ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.A_Predictor(Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.A_Predictor(Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.A_Predictor(ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.A_Predictor(ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.A_Predictor(Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.A_Predictor(Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
 
 		void ApplyPrepMethod() final
 		{
-			ST.X_sub = ST.X_prev;
+			Mthd.X_sub = Mthd.X_prev;
 
-			ST.X_pred.nec = ST.Predictor(ST.X_sub.nec, ST.X_prev.nec, NEC.RP);
-			ST.X_pred.acu_c = ST.Predictor(ST.X_sub.acu_c, ST.X_prev.acu_c, AC.RP);
-			ST.X_pred.hel = ST.Predictor(ST.X_sub.hel, ST.X_prev.hel, HEL.RP);
+			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_sub.acu_c, Mthd.X_prev.acu_c, AC.RP);
+			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_sub.hel, Mthd.X_prev.hel, HEL.RP);
 
-			ST.X_pred.cy = ST.Predictor(ST.X_sub.cy, ST.X_prev.cy, CY.RP);
-			ST.X_pred.adh = ST.Predictor(ST.X_sub.adh, ST.X_prev.adh, ADH.RP);
+			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_sub.cy, Mthd.X_prev.cy, CY.RP);
+			Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_sub.adh, Mthd.X_prev.adh, ADH.RP);
 
-			ST.X_pred.lm = ST.Predictor(ST.X_sub.lm, ST.X_prev.lm, LM.RP);
-			ST.X_pred.ln = ST.Predictor(ST.X_sub.ln, ST.X_prev.ln, LN.RP);
+			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_sub.lm, Mthd.X_prev.lm, LM.RP);
+			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_sub.ln, Mthd.X_prev.ln, LN.RP);
 
-			ST.X_pred.mia = ST.Predictor(ST.X_sub.mia, ST.X_prev.mia, MIA.RP);
-			ST.X_pred.mii = ST.Predictor(ST.X_sub.mii, ST.X_prev.mii, MII.RP);
+			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP);
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(ST.X_pred);// */
+			ExpressSubValues(Mthd.X_pred);// */
 		}
 	};
 }

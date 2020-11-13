@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -12,29 +11,28 @@ namespace StraightTask
 	using vector = std::vector<T>;//*/
 
 
-
 	namespace Methods
 	{
 		class Parameters
 		{
 		public:
 
-			double_t t_0; // initial time moment
-			double_t H; // grid step in calc-scheme
+			float_t t_0; // initial time moment
+			float_t H; // grid step in calc-scheme
 			uint32_t N; // amount of nods in a grid
-			double_t gap_width;
+			float_t gap_width;
 			uint16_t full_amount_of_gaps; // crucial parameter in terms of dealing with delayed arguments in equations
 
 			// default constructor
 			Parameters() :t_0(0.5), N(1500), gap_width(24.0), full_amount_of_gaps(1) { H = gap_width / N; }
 
 			// custom constructor
-			Parameters(double_t t0, uint32_t N, uint16_t full_amount_of_gaps)
+			Parameters(float_t t0, uint32_t N, uint16_t full_amount_of_gaps)
 				:t_0(t0), N(N), full_amount_of_gaps(full_amount_of_gaps) { H = gap_width / this->N; }
 
 			void Sync(Parameters& method) { method = *this; }
 
-			void Set(uint32_t N, double_t GapWidth, uint16_t full_amount_of_gaps){
+			void Set(uint32_t N, float_t GapWidth, uint16_t full_amount_of_gaps){
 				this->N = N; this->gap_width = GapWidth; this->full_amount_of_gaps = full_amount_of_gaps;
 				this->H = gap_width / N;
 			}
@@ -98,7 +96,7 @@ namespace StraightTask
 			~Euler() = default;
 
 			double_t Predictor // value returns to in-X_pred-double_t-member field
-			(double_t const prev_U, IRightPart<variables const &> & RP) {
+			(double_t const prev_U, IEqMember<variables const &> & RP) {
 				return prev_U + H * RP.Expression(X_prev); 
 			}
 
@@ -113,7 +111,7 @@ namespace StraightTask
 			variables X_cor; // corrected solution in Predictor-Corrector scheme
 
 			double_t Corrector // value returns to in-X_cor-double_t-member field
-			(double_t const prev_U, IRightPart<variables const &> & RP) {
+			(double_t const prev_U, IEqMember<variables const &> & RP) {
 				return prev_U + H * (RP.Expression(X_prev) + RP.Expression(X_pred)) * 0.5; }
 		};
 
@@ -129,13 +127,13 @@ namespace StraightTask
 			double_t Predictor // value returns to in-X_pred-double_t-member field
 			(double_t & sub_U, 
 				double_t const prev_U,
-				IRightPart <variables const&> & RP){
+				IEqMember <variables const&> & RP){
 
 				//sub_U is ref on a value of current component from X_sub obj
 
 				k1 = H * RP.Expression(X_prev);
 
-				X_sub.tj = X_prev.tj + H * 0.5;		 sub_U = prev_U + k1 * 0.5;
+				X_sub.tj = X_prev.tj + H * 0.5F;		sub_U = prev_U + k1 * 0.5;
 				k2 = H * RP.Expression(X_sub);
 
 				/*X_sub.tj = X_prev.tj + H * 0.5;*/		sub_U = prev_U + k2 * 0.5;
@@ -163,7 +161,7 @@ namespace StraightTask
 			(double_t const U_1,
 				double_t const U_2,
 				double_t const U_3,
-				double_t const prev_U, IRightPart<variables const&>& RP) {
+				double_t const prev_U, IEqMember<variables const&>& RP) {
 				//return prev_U + H * RP.Expression(X_prev);
 				return 4 * H * RP.Expression(X_prev) + (U_1 - 10.0 * prev_U)/3.0 + 6.0 * U_3 - 2.0 * U_2;
 			}
@@ -173,7 +171,7 @@ namespace StraightTask
 				double_t const U_2,
 				double_t const U_3,
 				double_t const prev_U,
-				IRightPart<variables const &> & RP) {
+				IEqMember<variables const &> & RP) {
 				return 0.04 * (12.0 * H * RP.Expression(X_pred) + 48.0 * prev_U - 36.0 * U_3 + 16.0 * U_2 - 3.0 * U_1);
 			}
 
@@ -191,7 +189,7 @@ namespace StraightTask
 
 			double_t A_Predictor // value returns to in X_pred double_t-member
 			(double_t const prev_U,
-				IRightPart<variables const &> & RP) {
+				IEqMember<variables const &> & RP) {
 				return prev_U + H * (55.0 * RP.Expression(X_prev) - 59.0 * RP.Expression(X[3]) + 37.0 * RP.Expression(X[2]) - 9.0 * RP.Expression(X[1])) / 24.0;
 			}
 
@@ -207,7 +205,7 @@ namespace StraightTask
 
 			double_t A_Corrector // value returns to in-X_cor-double_t-member
 			(double_t const prev_U,
-				IRightPart<variables const&>& RP) {
+				IEqMember<variables const&>& RP) {
 				return prev_U + H * (9 * RP.Expression(X_pred) + 19.0 * RP.Expression(X_prev) - 5.0 * RP.Expression(X[3]) + RP.Expression(X[2])) / 24.0;
 			}
 		

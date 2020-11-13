@@ -1,5 +1,4 @@
 #pragma once
-#include <base/Exceptions.h>
 #include <models/3rd/equations.h>
 #include <base/Settings_base.h>
 

@@ -1,18 +1,19 @@
-#include <1stModelPipe.h>
+#include <3rdModelPipe.h>
 using namespace StraightTask;
 
 // 'cause I want to
-auto main()->int{
+auto main() -> int32_t{
 
 	//calling for calculations
 	try {
-		PredCor Task;
-		Task.SolveAndOutput(6000, 24.0, 4);
+		Euler Task;
+		Task.SolveAndOutput(1500, 24.0, 4);
 	}
 
 	catch (MyException const & bzz) {
 		std::cout << "\n Calculation process was interrupted due to the problem occured:\n\t"
 			<< bzz.what() << "\n\t" << bzz.what_exactly();
+		getchar();
 		return EXIT_FAILURE;
 	} 
 

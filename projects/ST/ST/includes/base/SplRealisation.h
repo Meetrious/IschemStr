@@ -4,8 +4,10 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <cmath>
 
-// my lazy method that doesn't even control the oscillations that may appear 
+/* my lazy method that doesn't even control the oscillations that may appear 
+"QuasiMonotonousSplineMaker", yup// */
 bool QMSmaker(
 	std::vector<std::vector<double_t>> const & exp,
 	std::vector<std::vector<double_t>> & SPL_info)
@@ -47,16 +49,17 @@ bool QMSmaker(
 			{
 				bet = atan((exp[i + 1][1] - exp[i][1]) / (exp[i + 1][0] - exp[i][0]));
 				alp = atan((exp[i][1] - exp[i - 1][1]) / (exp[i][0] - exp[i - 1][0]));
+
 				// вычисляем первую производную в t[i]
 				SPL_info[i][2] = tan(alp - (alp - bet) / 2);
 			}
 
 		// 1.3. вычисляем шестую 3й производной в t[i]
-		SPL_info[i][4] = (1. / pow(H_e, 2)) * (SPL_info[i][2] + SPL_info[i - 1][2]) + (2. / pow(H_e, 3)) * (SPL_info[i][1] - SPL_info[i - 1][1]);
+		SPL_info[i][4] = (1. / std::pow(H_e, 2)) * (SPL_info[i][2] + SPL_info[i - 1][2]) + (2. / std::pow(H_e, 3)) * (SPL_info[i][1] - SPL_info[i - 1][1]);
 
 
 		// 1.4. вычисляем половину 2й производной в t[i] 
-		SPL_info[i][3] = (1. / pow(H_e, 2)) * (SPL_info[i - 1][1] - SPL_info[i][1]) - (1. / H_e) * SPL_info[i][2] - H_e * SPL_info[i][4];
+		SPL_info[i][3] = (1. / std::pow(H_e, 2)) * (SPL_info[i - 1][1] - SPL_info[i][1]) - (1. / H_e) * SPL_info[i][2] - H_e * SPL_info[i][4];
 		
 		// для отчетности выводим на экран данные сплайнов на данном i-промежутке
 		std::cout << "[" << exp[i - 1][0] << ", " << SPL_info[i][0] << "]" << "  ==>  "; // интерполируемый промежуток
@@ -65,6 +68,7 @@ bool QMSmaker(
 		std::cout << SPL_info[i][2] << "*x + "; // коэффициент при первой степени переменной 3DEG сплайна
 		std::cout << SPL_info[i][3] << "*x^2 + "; // коэффициент при второй степени переменной 3DEG сплайна
 		std::cout << SPL_info[i][4] << "*x^3 \n"; // коэффициент при третьей степени переменной 3DEG сплайна
+
 		// Вот всё и готово для построения сплайна на промежутке [x_(i-1), x_i]
 	}
 	return true;

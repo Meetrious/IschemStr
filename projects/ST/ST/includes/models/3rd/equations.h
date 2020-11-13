@@ -1,5 +1,4 @@
 #pragma once
-//#include <functional>
 #include <models/3rd/variables.h>
 #include <base/Eq_base.h>
 #include <cmath>
@@ -25,7 +24,7 @@ namespace StraightTask
 	}
 
 
-	template<typename argType> class IEquation: public IRightPart<argType>{};
+	template<typename argType> class IEqMember: public IRightPart<argType>{};
 
 
 	namespace Neurons
@@ -37,7 +36,7 @@ namespace StraightTask
 
 		namespace NecroticCells
 		{
-			class Equation : public IEquation<variables const&>{
+			class Equation : public IEqMember<variables const&>{
 			public:
 				Equation(){ comp_amount = 3; ret_is = false; }
 
@@ -53,7 +52,7 @@ namespace StraightTask
 
 		namespace AcuteChanges
 		{
-			class Equation : public IEquation<variables const&> {
+			class Equation : public IEqMember<variables const&> {
 			public:
 				Equation() { comp_amount = 4; ret_is = false; }
 				const double_t ini_data[2] = { 0.5, 0.2890 };
@@ -70,7 +69,7 @@ namespace StraightTask
 
 		namespace IntactCells 
 		{
-			class Equation : public IEquation<variables const&> {
+			class Equation : public IEqMember<variables const&> {
 			public:
 				Equation() { comp_amount = 3; ret_is = false; }
 				const double_t ini_data[2] = { 0.5, 0.7110 };
@@ -98,16 +97,16 @@ namespace StraightTask
 
 		namespace Pro_Inflam
 		{
-			class Equation : public IEquation<variables const&> {
+			class Equation : public IEqMember<variables const&> {
 			public:
 				Equation() { comp_amount = 4; ret_is = false;}
 				//const double_t ini_data[2] = { 0.5, 0.0906 };
 				const double_t ini_data[2] = { 0.5, 0.0 };
 				[[nodiscard]] inline double_t Expression(variables const& u)noexcept final{
 					
-					B[1] = Hill(1.0, u.mia, C_Ma, 1) * (u.nec + GetPositive(u.acu_c - _A));
-					B[2] = Hill(1.0, u.lm, C_Lm, 1) * (u.nec + u.acu_c);
-					B[3] = Hill(1.0, u.ln, C_Ln, 1) * (u.nec + u.acu_c);
+					B[1] = CHill(p_Macy, u.mia, C_Ma, l1) * (u.nec + GetPositive(u.acu_c - _A));
+					B[2] = CHill(p_Lmcy, u.lm, C_Lm, l2) * (u.nec + u.acu_c);
+					B[3] = CHill(p_Lncy, u.ln, C_Ln, l3) * (u.nec + u.acu_c);
 					B[4] = - e_cy * u.cy;
 					
 					return Sum_B();
@@ -121,7 +120,7 @@ namespace StraightTask
 		static double_t 
 			o_cy_1 = 2.62e-2, o_cy_2 = 3.14e-2, e_adh = 1.31e-2;
 
-		class Equation : public IEquation<variables const&>{
+		class Equation : public IEqMember<variables const&>{
 		public:
 			Equation() { comp_amount = 3; ret_is = false; }
 			//const double_t ini_data[2] = { 0.5, 0.0 };
@@ -141,7 +140,7 @@ namespace StraightTask
 		static double_t
 			c_Lm = 9.63e-2, c_dLm = 0.08, K_Lm = 43.9, d_Lm = 0.139;
 
-		class Equation : public IEquation<variables const&> {
+		class Equation : public IEqMember<variables const&> {
 		public:
 			Equation() { comp_amount = 3; ret_is = true; }
 			const double_t ini_data[2] = { 0.5, 0.0 };
@@ -162,7 +161,7 @@ namespace StraightTask
 			c_dLn1 = 16.2, K_Ln1 = 3.96,
 			c_dLn2 = 4.43, K_Ln2 = 9.899;
 
-		class Equation : public IEquation<variables const&>{
+		class Equation : public IEqMember<variables const&>{
 		public:
 			Equation() { comp_amount = 4; ret_is = false; }
 			const double_t ini_data[2] = { 0.5, 0.0861204 };
@@ -188,7 +187,7 @@ namespace StraightTask
 	
 		namespace Active
 		{
-			class Equation : public IEquation<variables const&>{
+			class Equation : public IEqMember<variables const&>{
 			public:
 				Equation() { comp_amount = 4; ret_is = false; }
 				const double_t ini_data[2] = { 0.5, 0.01 };
@@ -206,7 +205,7 @@ namespace StraightTask
 		}
 		namespace Inactive
 		{
-			class Equation : public IEquation<variables const&>
+			class Equation : public IEqMember<variables const&>
 			{
 			public:
 				Equation() { comp_amount = 4; ret_is = false; }

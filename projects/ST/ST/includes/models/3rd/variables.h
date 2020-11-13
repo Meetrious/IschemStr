@@ -25,7 +25,7 @@ namespace StraightTask
 
 		RetVar ret;
 
-		double_t tj;
+		float_t tj;
 
 		double_t nec, acu_c, hel ;
 

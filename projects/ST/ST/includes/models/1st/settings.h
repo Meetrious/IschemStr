@@ -1,7 +1,6 @@
-// This header constains final shells of ODE_members of the 1st-model
+// This header constains whole objects for each ODE_system member from the 1st-model
 
 #pragma once
-
 #include <base/Exceptions.h>
 #include <models/1st/equations.h>
 #include <base/Settings_base.h>
