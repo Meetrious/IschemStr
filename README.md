@@ -1,6 +1,4 @@
 # Ischemic-Stroke-Inflammation-Model-Solver
-Ссылка на отчёты и наработки: 
-https://www.overleaf.com/read/mtxqqwygypgp , https://www.overleaf.com/read/fygdbgkzgxtz
 
 Глобально репозиторий содержит реализацию двух программ: решение прямой задачи и решение обратной задачи в связи с первой.
 
@@ -15,8 +13,13 @@ https://www.overleaf.com/read/mtxqqwygypgp , https://www.overleaf.com/read/fygdb
 Хедеры в ST/ST/include/*Folder* организованы и включаются друг в друга в заданном порядке, который работает.
 В ST/ST/ST_main.cpp включаются только те хедеры, что лежат на вершине ST/ST/includes.
 
+Ссылка на отчёты и наработки: 
+https://www.overleaf.com/read/mtxqqwygypgp
 
 ## Обратная задача (*namespace* ***ReverseTask***)
 (II) Projects/RT содержит код реализации решения обратной покоэффициентной задачи поставленной на систему из ОДУ с запаздываниями, а именно стохастический метод BGA.
 
 Input содержит необходимые входные данные для работы, такие как начальные условия, значения постоянных коэффициентов правой части уравнений по умолчанию...
+
+Ссылка на отчёты и наработки: 
+https://www.overleaf.com/read/fygdbgkzgxtz
