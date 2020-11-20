@@ -17,20 +17,27 @@ namespace ReverseTask
 
 		void GatherData() {
 			one.GatherData(input_dir + "exp/cyto4SPL.txt");
+			two.GatherData(input_dir + "preserved_solution/2/Cy.txt");
 		}
 
-		void CollectCalc(float_t H, float_t Tj, StraightTask::variables& X_sol) {
+		void CollectCalc1(float_t H, float_t Tj, StraightTask::variables& X_sol) {
 			one.CollectCalc(H, Tj, X_sol.cy);
+
+		}
+		void CollectCalc2(uint32_t Nj, uint16_t gap, uint32_t N, StraightTask::variables& X_sol) {
+			two.CollectCalc(Nj, gap, N, X_sol.cy);
 		}
 
 		void CountFullResult() {
 			full_result = 0;
-			full_result += one.CountResult();
+			//full_result += one.CountResult();
+			full_result += two.CountResult();
 		}
 
 
 		void ResetStates() {
-			one.ResetState();
+			//one.ResetState();
+			two.ResetState();
 		}
 
 

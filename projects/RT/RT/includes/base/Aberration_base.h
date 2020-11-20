@@ -93,25 +93,46 @@ namespace ReverseTask
 				exit(1337);
 			}
 
-			float_t dummyForNj;
+			float_t dummy;
 			for (size_t i = 0; !in.eof(); i++)
 			{
-				in >> dummyForNj;
-				in >> Tjs.emplace_back();
+				in >> dummy;
+				in >> dummy;
 				in >> Proper.emplace_back();
+				Calc.emplace_back();
 			}
 
 			in.close();
 
-			Tjs.shrink_to_fit();
+			//Tjs.shrink_to_fit();
 			Proper.shrink_to_fit();
+			Calc.shrink_to_fit();
 		}
+
+		void CollectCalc(uint32_t Nj, uint16_t gap, uint32_t N, double_t val) {
+			Calc[Nj + gap * N] = val;
+		}
+
+		double_t CountResult() {
+
+			for (size_t i = 0; i < Proper.size(); i++) {
+				m_res += std::abs(Proper[i] - Calc[i]);
+			}
+
+			m_res /= Proper.size();
+
+			return m_res;
+		}
+
+		void ResetState() { m_res = 0.0; }
 
 
 	private:
-		vector<float_t> Tjs;
+		//vector<float_t> Tjs;
 		vector<double_t> Proper;
+		vector<double_t> Calc;
 
+		double_t m_res;
 	};
 
 	class IAggregateControls;

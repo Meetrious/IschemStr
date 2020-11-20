@@ -26,19 +26,13 @@ namespace StraightTask
 				// setting ret-values for Tj-time-moment in X_pred
 				//if (is_SYS_deflecting()) RetUpload(Nj);
 
-				/* pushing presolved data in X_pred in case we want to freeze the system relatively given behaviour
-				 defined in SYS.<IAggregate_member_field>.PreSavedSolData;
-				 matrix<double_t> StraightTask::IOs SolDataGetter is a member function that does things // */
-				{
-					//for (auto const& cur : SYS.SolDataGetter) { cur(current_day, Nj, SYS.Mthd.X_pred); }	
-
-						//SYS.SolDataGetter[3](current_gap, Nj, SYS.Mthd.N, SYS.Mthd.X_pred);
-						//SYS.SolDataGetter[3](current_gap, Nj, SYS.Mthd.N, SYS.Mthd.X_cor); // in pred_cor scheme
-				}
+				
 				AssignSolData(current_gap, Nj, Mthd.X_pred);
 				ApplyMethod();
 
-				F.CollectCalc(Mthd.H, Tj, (*Mthd.X_sol));
+				//F.CollectCalc(Mthd.H, Tj, (*Mthd.X_sol));
+				F.CollectCalc2(Nj, current_gap, Mthd.N, (*Mthd.X_sol));
+
 
 				// updating RetArray(s) pushing X_prev.value of solution
 				//if (is_SYS_deflecting()) RetDataUpdate(Nj);

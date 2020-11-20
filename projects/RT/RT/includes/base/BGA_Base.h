@@ -95,6 +95,7 @@ namespace ReverseTask
 				amount_of_attributes = SetCTVlist();
 
 				Sp = SortedFraction * (p / 100);
+				p_rec = 10 * (p / 100);
 
 			}
 
@@ -119,6 +120,7 @@ namespace ReverseTask
 
 			// fraction of 
 			uint16_t Sp;
+			uint16_t p_rec;
 
 			// BGA iteration amount | 0 < iterAmount < 32767
 			uint16_t amount_of_iterations = 200; 
@@ -236,7 +238,7 @@ namespace ReverseTask
 			{
 
 				// Setting parameters for calc-method: N, \tau, full_amount_of_gaps
-				STM.Mthd.Set(1500, 24, 1);
+				STM.Mthd.Set(1500, 24.0F, 4);
 
 				/* setting up the StraightSask for every BGA iteration:
 				* initial data setting and presolved data definition */
@@ -257,9 +259,9 @@ namespace ReverseTask
 				srand((unsigned int)(time(0))); // запускаем генератор случайных чисел
 
 				// randomising coefs in population generated above
-				for (size_t i = 0; i < p_0; i++) {
+				for (size_t cind = 0; cind < p_0; cind++) {
 					for (size_t j = 0; j <= amount_of_attributes; j++) {
-						Population[i].RandomiseCoef(j, bounds[0][j], bounds[1][j]);
+						Population[cind].RandomiseCoef(j, bounds[0][j], bounds[1][j]);
 					}
 				}
 
@@ -267,12 +269,12 @@ namespace ReverseTask
 
 
 				ios.Cout.open(output_dir + "RT/current/leaders_C.txt", std::ios_base::out);
-				if (!ios.Cout)
-				{
+				if (!ios.Cout) {
 					std::cout << "\n !!!stream for coeficients was not allocated for some reason.\n Care to attend!";
 					getchar();
 					return;
 				}
+
 				ios.Cout << '#'
 					<< "mu = " << mu << "\t"
 					<< "d = " << rc << "\t"
@@ -290,8 +292,7 @@ namespace ReverseTask
 
 
 				ios.Fout.open(output_dir + "RT/current/leaders_F.txt", std::ios_base::out);
-				if (!ios.Fout)
-				{
+				if (!ios.Fout) {
 					std::cout << "\n !!!stream for F-values was not allocated for some reason.\n Care to attend!";
 					getchar();
 					return;
@@ -316,7 +317,7 @@ namespace ReverseTask
 						(*CoefsToVariate[j].second) = Population[cind].coefs_values[j];
 
 					// calculating current Aberration value
-					Population[cind].F_value = STM.SolveForBGA(F);
+					Population[cind].F_value = STM.SolveForBGA(F); //1111111111111111111111
 
 				}
 
@@ -326,12 +327,11 @@ namespace ReverseTask
 					std::cout << "\n" << cit << '/' << amount_of_iterations 
 						<< "th iteration of BGA: " << std::endl;
 
-					// 1. Строим поколение алгоритма BGA на решениях задачи
-					// подготовим выделенных участников к анализу
+					// 1. Recalculating F_values for current population
 					for (size_t cind = Sp; cind < Population.size(); cind++)
 					{
 						
-						// вносим текущие значения коэффициентов на конвеер
+						// putting current individual "on the conveyor"
 						for (uint16_t i = 0; i <= amount_of_attributes; i++)
 							(*CoefsToVariate[i].second) = Population[cind].coefs_values[i];
 
@@ -344,13 +344,20 @@ namespace ReverseTask
 #endif
 					}
 
-					// 2. Сортируем по возрастанию значения F_value построенный массив до 30% доли его носителя
+					// 2. Sorting vector container in ascending order of F_values
 					Sort1stFrac();
 
-					// 4. Рекомбинация до исходного числа p участников и их мутация
-					for (size_t cind = Sp; cind <= p; cind++) {
+					// 4. Recombining
+					for (size_t cind = Sp; cind < p-p_rec; cind++) {
 						Recombine(Population[cind]);
 						Mutate(Population[cind]);
+					}
+
+					// 5. Accepting new members to the Population
+					for (size_t cind = p-p_rec; cind <= p; cind++) {
+						for (size_t j = 0; j <= amount_of_attributes; j++) {
+							Population[cind].RandomiseCoef(j, bounds[0][j], bounds[1][j]);
+						}
 					}
 
 					ios.WriteResult(Population[1]);
@@ -363,11 +370,9 @@ namespace ReverseTask
 				ios.WriteBest(Population[1]);
 				ios.WriteStatData(Population[1]);
 
-				// отпускаем популяцию, порождённую последней итерацией алгоритма BGA
-				//for (size_t i = individuals.size() - 1; i >= RT.Sp + 1; i--) individuals.pop_back();
+
 				std::cout << "\n Reversed task is solved for now \n";
 
-				//StraightTask::SolveCurrentIndiv(3000, 4, individuals[1], RT);
 				getchar();
 				return;
 
@@ -383,7 +388,7 @@ namespace ReverseTask
 					return;
 				}
 
-				for (size_t i = 0; i < amount_of_attributes; i++) {
+				for (size_t i = 0; i <= amount_of_attributes; i++) {
 					in >> (*CoefsToVariate[i].second);
 				}
 				in.close();
