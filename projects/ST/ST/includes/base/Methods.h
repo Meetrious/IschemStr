@@ -1,34 +1,31 @@
+/* This header constains classes with functions that implement ODE_calculation methods*/
+
 #pragma once
-#include <string>
-#include <fstream>
-#include <iostream>
 #include <vector>
 
 
 namespace StraightTask
 {
-	template<typename T>
-	using vector = std::vector<T>;//*/
-
-
 	namespace Methods
 	{
-		class Parameters
-		{
+		class Parameters {
 		public:
 
 			float_t t_0; // initial time moment
 			float_t H; // grid step in calc-scheme
 			uint32_t N; // amount of nods in a grid
+
 			float_t gap_width;
-			uint16_t full_amount_of_gaps; // crucial parameter in terms of dealing with delayed arguments in equations
+			uint16_t full_amount_of_gaps; // crucial parameter in terms of dealing with delayed(retarded) arguments in equations
 
 			// default constructor
 			Parameters() :t_0(0.5), N(1500), gap_width(24.0), full_amount_of_gaps(1) { H = gap_width / N; }
 
 			// custom constructor
 			Parameters(float_t t0, uint32_t N, uint16_t full_amount_of_gaps)
-				:t_0(t0), N(N), full_amount_of_gaps(full_amount_of_gaps) { H = gap_width / this->N; }
+				:t_0(t0), N(N), full_amount_of_gaps(full_amount_of_gaps) {
+				H = gap_width / this->N; 
+			}
 
 			void Sync(Parameters& method) { method = *this; }
 
@@ -37,47 +34,9 @@ namespace StraightTask
 				this->H = gap_width / N;
 			}
 
-			// the method that defines declared variables in pointer-array by values provided in file from <way> directory
-			static void SetCoefs(double_t* CoeficientsToVary[], uint16_t CFV_cap, std::string way){
-				vector<double_t> inCoefsVals; double_t tmp;
-				std::ifstream in(way);
-				while (!in.eof())
-				{
-					in >> tmp;
-					inCoefsVals.emplace_back(tmp);
-				}
-				in.close();
-				
-				if (inCoefsVals.size() != CFV_cap) {
-					bool trg;
-					std::cerr << "\n Amount of incoming values is not equal to amount of declared variables to vary. \n";
-					std::cout << "\n Coeficients will be defined by first values obtained from the file, and zeros, if declared amount is greater.";
-					std::cout << "\n Do you wish to terminate the process? \n 0. NO; \n 1. YES; \n ans: ";
-					std::cin >> trg;
-					if (trg)
-					{
-						in.close();
-						throw ("Amount of incoming values is not equal to amount of declared variables to vary.");
-					}
-				}
-				if (inCoefsVals.size() > CFV_cap)
-				{
-					for (size_t i = 0; i < CFV_cap; i++)
-						*CoeficientsToVary[i] = inCoefsVals[i];
-				}
-				else
-				{
-					size_t i = 0;
-					for (; i < inCoefsVals.size(); i++)
-						*CoeficientsToVary[i] = inCoefsVals[i];
-					while (i < CFV_cap) *CoeficientsToVary[i] = 0;
-				}
-				return;
-			}
 
 		};
-		class IMethod: public Parameters
-		{
+		class IMethod: public Parameters {
 		public:
 			IMethod() { X_init.tj = t_0; X_sol = nullptr; }
 			~IMethod() = default;
@@ -88,8 +47,8 @@ namespace StraightTask
 			variables* X_sol; // a pointer to variables obj with final solution 
 		};
 
-		class Euler : public IMethod
-		{
+		//1-st order numerical Eulers method 
+		class Euler : public IMethod {
 		public:
 
 			Euler() { X_sol = &X_pred; }
@@ -102,8 +61,8 @@ namespace StraightTask
 
 		};
 
-		class ModEuler :public Euler
-		{
+		// 2-nd order modified numerical Euler method 
+		class ModEuler :public Euler {
 		public:
 			ModEuler() { X_sol = &X_cor; }
 			~ModEuler() = default;
@@ -115,8 +74,8 @@ namespace StraightTask
 				return prev_U + H * (RP.Expression(X_prev) + RP.Expression(X_pred)) * 0.5; }
 		};
 
-		class RunKut4 : public IMethod
-		{
+		// 4-th order numerical Runge-Kutta method 
+		class RunKut4 : public IMethod {
 		public:
 			RunKut4() { X_sol = &X_pred; }
 			~RunKut4() = default;
@@ -146,8 +105,8 @@ namespace StraightTask
 			}
 		};
 
-		class RKGear : public RunKut4
-		{
+		// 4-th order Gear Method
+		class RKGear : public RunKut4 {
 		public:
 
 			RKGear() { X_sol = &X_cor; }
@@ -177,8 +136,8 @@ namespace StraightTask
 
 		};
 
-		class Adams : public RunKut4
-		{
+		// 4-th order multistep Adams method
+		class Adams : public RunKut4 {
 		public:
 			Adams() { X_sol = &X_pred; }
 			~Adams() = default;
@@ -195,8 +154,8 @@ namespace StraightTask
 
 		};
 
-		class ABM : public Adams
-		{
+		// 4-th order multistep Adams-Bashforth-Moulton method
+		class ABM : public Adams {
 		public:
 			ABM() { X_sol = &X_cor; }
 			~ABM() = default;

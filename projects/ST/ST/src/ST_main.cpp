@@ -1,8 +1,10 @@
+/* Here we include *Pipe.h with the task we want to solve. */
 #include <3rdModelPipe.h>
+
 using namespace StraightTask;
 
 // 'cause I want to
-auto main() -> int32_t{
+auto main() -> int32_t {
 
 	//calling for calculations
 	try {
@@ -25,11 +27,11 @@ auto main() -> int32_t{
 	}
 
 	catch (...){
-		std::cout << "I've caught something I can't even explain.\n "
+		std::cout << "I've caught something I can't explain.\n "
 			<< "Even std::exception can't cover that.";
 		getchar();
 		return EXIT_FAILURE;
-	}//*/
+	}
 
 	return EXIT_SUCCESS;
 }

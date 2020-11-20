@@ -1,15 +1,15 @@
 /* This header serves as pre-surface shell for implementation of common functions that manifest solution algorithm;
 * main points of interest are ISolver public methods (void Solve*...*(-//-));
 * a little bit less important, but not it the least (void Prepair*(-//-)) methods;
-* the class ISolver is to be publicly inherited in class <Method> in *Pipe.h headers, 
-where presented definitions of all functions(relatively to each ODE system)
-required in algorythm stated in (void Solve*...*(-//-)) // */
+* the class ISolver is to get publicly inherited in class <Method> in *Pipe.h headers, 
+	where presented definitions of all declared functions(relatively to each ODE system)
+	required in algorythm stated in (void Solve*...*(-//-)) // */
 
 
 #pragma once
 #include <base/Settings_base.h>
-#include <functional>
 
+// namespace and class declaration for reverse-task purposes
 namespace ReverseTask {
 	class IAggregateControls;
 }
@@ -42,7 +42,7 @@ namespace StraightTask
 		~PhaseTrajOutput() { if (str.is_open()) str.close(); }
 	};
 
-	// is defined somewhere above throught inclusion of this header in another one
+	// is defined somewhere above through inclusion of this header in another one
 	class IAggregate;
 
 	template<typename Method>
@@ -57,7 +57,7 @@ namespace StraightTask
 			// setting an object that will output 2 or 3 dimentional phase trajectory for solution 
 			// PhaseTrajOutput PTO("APPROX");
 
-			// Setting parameters for calc-method: N, \tau, full_amount_of_gaps
+			// Setting parameters for calc-method:
 			Mthd.Set(N, GapWidth, full_amount_of_gaps);
 
 			PrepairTheTask();
@@ -70,13 +70,13 @@ namespace StraightTask
 			while (current_gap < full_amount_of_gaps)
 			{
 
-				std::cout << full_amount_of_gaps - current_gap << " "; // outputing amount of gaps remained to process
+				std::cout << full_amount_of_gaps - current_gap << " "; // outputting amount of gaps remained to process
 				Mthd.X_prev = Mthd.X_init; // previous step is defined by initial one at every begining of the gap
 				Tj = Mthd.X_pred.tj = Mthd.X_prev.tj; // synchronising the independent variable
 				uint32_t Nj = 1; // restating the number of the current step in num-method
 
 				// 1st approximations for multistep-methods
-				if (current_gap == 0) ApplyPrepStep(Nj, Tj); // in one-step-methods it is void{return;}
+				if (current_gap == 0) ApplyPrepStep(Nj, Tj); // for one-step-methods it is void{return;}
 
 				// cycle for processing current gap in <step_method>
 				for (; Nj <= N; Nj++)
@@ -87,20 +87,12 @@ namespace StraightTask
 					// setting ret-values for Tj-time-moment in X_pred
 					if (is_SYS_deflecting()) RetUpload(Nj);
 
-					// контролируем промежуток интерпол€ции
+					// interoplation gap monitor
 					//Mthd.X_pred.CheckShiftInterpGap(STpar);
 
-					/* pushing presolved data in X_pred in case we want to freeze the system relatively given behaviour
-					 defined in SYS.<IAggregate_member_field>.PreSavedSolData;
-					 matrix<double_t> StraightTask::IOs SolDataGetter is a member function that does things // */
-					{
-						//for (auto const& cur : SYS.SolDataGetter) { cur(current_day, Nj, SYS.Mthd.X_pred); }	
+					// defining solution with presolved data
+					AssignSolData(current_gap, Nj, Mthd.X_pred);
 
-							//SYS.SolDataGetter[3](current_gap, Nj, SYS.Mthd.N, SYS.Mthd.X_pred);
-							//SYS.SolDataGetter[3](current_gap, Nj, SYS.Mthd.N, SYS.Mthd.X_cor); // in pred_cor scheme
-					}
-
-					AssignSolData(current_gap,Nj,Mthd.X_pred);
 					ApplyMethod();
 
 					// outputting solution in current Tj - time-moment
@@ -138,88 +130,12 @@ namespace StraightTask
 			}
 		}
 
-		// Solves the straight task and outputs solution
-		void SolveAndOutput2(uint32_t N, float_t GapWidth, uint16_t full_amount_of_gaps) {
-
-			// setting an object that will output 2 or 3 dimentional phase trajectory for solution 
-			// PhaseTrajOutput PTO("APPROX");
-
-			// Setting parameters for calc-method: N, \tau, full_amount_of_gaps
-			Mthd.Set(N, GapWidth, full_amount_of_gaps);
-
-			PrepairTheTask();
-
-			PrepairTheOutput();
-
-			uint16_t current_gap = 0;
-			float_t Tj;
-
-			while (current_gap < full_amount_of_gaps)
-			{
-
-				std::cout << full_amount_of_gaps - current_gap << " "; // outputing amount of gaps remained to process
-				Mthd.X_prev = Mthd.X_init; // previous step is defined by initial one at every begining of the gap
-				Tj = Mthd.X_pred.tj = Mthd.X_prev.tj; // synchronising the independent variable
-				uint32_t Nj = 1; // restating the number of the current step in num-method
-
-				// 1st approximations for multistep-methods
-				if (current_gap == 0) ApplyPrepStep(Nj, Tj); // in one-step-methods it is void{return;}
-
-				// cycle for processing current gap in <step_method>
-				for (; Nj <= N; Nj++)
-				{
-					// shifting independent variable on one step further for predicted solution
-					Tj = Mthd.X_pred.tj += Mthd.H;
-
-					// setting ret-values for Tj-time-moment in X_pred
-					if (is_SYS_deflecting()) RetUpload(Nj);
-
-					// контролируем промежуток интерпол€ции
-					//Mthd.X_pred.CheckShiftInterpGap(STpar);
-
-
-					AplMethod(Nj + N * current_gap);
-
-					// outputting solution in current Tj - time-moment
-					//for (auto const& cur : SolutionOutputter) { cur(Nj, Tj, (*Mthd.X_sol)); }
-					OutputSolution(Nj, Tj, (*Mthd.X_sol));
-
-					// Phase trajectory output
-					//PTO.OutputPhaseTraj(Nj, Tj, { (*SYS.Mthd.X_sol).x, (*SYS.Mthd.X_sol).y, (*SYS.Mthd.X_sol).z });
-
-
-					// outputting equation budget-bricks
-					//for (auto const& cur : BudgetOutputter) { cur(Nj, Tj); }
-					OutputBudgets(Nj, Tj);
-
-					// updating RetArray(s) pushing X_prev.value of solution
-					if (is_SYS_deflecting()) RetDataUpdate(Nj);
-
-					// shifting X_prev next step further in one-step-methods and
-					// X[1],X[2]... next step further in multistep-methods
-					NodeShift();
-
-
-				} // end of the cycle processing current gap in <step_method>
-
-				current_gap++; std::cout << " ; ";
-
-				// Checking if the any gap remained processed 
-				if (current_gap == Mthd.full_amount_of_gaps)
-					std::cout << "\t\a Finita! \n\n All assigned days were rendered;\n";
-				else
-				{
-					Mthd.X_init = (*Mthd.X_sol);
-					Nj = 1;
-				}
-			}
-		}
-
-		// Solves the straight task in order to calculate residual value of control data in BGA
+		// Solves the straight task in order to calculate aberration value in BGA
 		double_t SolveForBGA(ReverseTask::IAggregateControls& F);
 
 		// Solves the straight task three times and calculates the order of assignated num-method using Runge-rule
 		void SolveForRungeAnalysis() {
+			// some day in another life
 			return;
 		}
 
@@ -328,8 +244,6 @@ namespace StraightTask
 
 		virtual void ApplyMethod() = 0;
 
-		virtual void AplMethod(size_t Ni) { return; };
-
 		void CollectData();
 
 		void SetIniData(vector<float_t>& T0s);
@@ -345,8 +259,6 @@ namespace StraightTask
 		void OutputSolution(uint32_t Nj, float_t Tj, variables const& X);
 		void OutputBudgets(uint32_t Nj, float_t Tj);
 		void DeallocateOutputStreams();
-
-		void ToReplicateOrToSolve();
 		
 
 		virtual void ApplyPrepMethod() { return; }

@@ -1,16 +1,23 @@
+/* This header gathers all required data for every ODE_system element in IMember object */
+
 #pragma once
 #include <base/ST_exceptions.h>
 #include <base/DirPaths.h>
 #include <base/Methods.h>
 #include <base/SplRealisation.h>
 
+#include <fstream>
+#include <iostream>
+
 #include <vector>
-#include <iomanip>
+#include <iomanip> // for precision regulation
 #include <functional>
 
 
 namespace StraightTask
 {
+	template<typename T>
+	using vector = std::vector<T>;
 
 	template<typename T>
 	using matrix = vector<vector<T>>; // */
@@ -235,12 +242,12 @@ namespace StraightTask
 		std::ofstream OutBudgetStream;
 		std::ofstream OutErrorStream;
 
-		matrix<double_t> PreSavedSolData; // 2-dim table for presaved solution
+		matrix<double_t> PreSavedSolData; // 2-dim table for presaved solution (time, value)
 
 		// a method that outputs directory of a *.txt file with presaved solution
 		const std::string presol_data_dir()noexcept { return input_dir + "preserved_solution/2/" + sol_name() + ".txt"; }
 
-		// a method that outputs a name of a ODE_System member
+		// a method that outputs the reserved name of the ODE_System member
 		virtual const char* sol_name()noexcept = 0;
 
 	public:
@@ -354,16 +361,18 @@ namespace StraightTask
 	};
 
 
+	
 	template<typename RightPart>
 	class IMember : public IOs, public ISpline, public IRet {
-
+	// type-instance equation.h: StraightTask::Neurons::NecroticCells::Equation
 	public:
 		IMember() {}
 		~IMember() = default;
 
-		RightPart RP; // equation of a current member of an ODE system
 
-		// a method that outputs budget contributions
+		RightPart RP; // right part of the equation for the current member of an ODE system
+
+		// a method that outputs budget contributions in current RightPart
 		void OutputBuds(uint32_t Nj, float_t Tj) final {
 			OutBudgetStream << Nj << "\t\t\t" << std::setprecision(5) << Tj << "\t\t\t";
 			OutBudgetStream << std::setprecision(15);
@@ -371,7 +380,7 @@ namespace StraightTask
 			OutBudgetStream << std::endl;
 		}
 
-		void GetInitialDataFromOutside(float_t& t0, double_t& val)
+		void SetInitialDataFromOutside(float_t& t0, double_t& val)
 		{
 			std::ifstream in(input_dir + "list of initials/per_value/" + sol_name() + ".txt");
 			if (!in)
@@ -388,21 +397,11 @@ namespace StraightTask
 
 			in.close();
 		}
-		void GetInitialData(float_t& t0, double_t& val) { t0 = (float_t)this->RP.ini_data[0]; val = this->RP.ini_data[1]; }
 
-
-		bool ToReplicateOrNot(size_t Ni, double_t& val) {
-			if (isPreSolved) {
-				if (Ni >= PreSavedSolData[0].size()) {
-					isCurrentlyPreSolved = false;
-					return false;
-				}
-				val = PreSavedSolData[1][Ni];
-				isCurrentlyPreSolved = true;
-				return true;
-			}
-			else return false;
+		void SetInitialData(float_t& t0, double_t& val) {
+			t0 = (float_t)this->RP.ini_data[0]; val = this->RP.ini_data[1]; 
 		}
+
 	
 	};
 

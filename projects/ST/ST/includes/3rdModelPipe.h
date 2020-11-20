@@ -1,6 +1,6 @@
 /* This header contains the class IAggregate that lists members of ODE system for 3rd Ischemic Model and 
 and ISolver-member-function definitions specifically for the system listed in IAggregate + 
-subclasses of ISolver that serve for implementations of various calculation methods*/
+subclasses of ISolver that serve for implementations of various calculation methods.*/
 
 #pragma once
 #include <models/3rd/settings.h>
@@ -49,7 +49,6 @@ it is compulsory that IAggregate class is defined above this include directive *
 namespace StraightTask
 {
 
-
 #define	T_Func(RETURN_TYPE)\
 template<typename Method>\
 RETURN_TYPE ISolver<Method>::
@@ -65,12 +64,12 @@ RETURN_TYPE ISolver<Method>::
 
 	T_Func(void)CollectData() {
 
-		NEC.CollectSolData();
+		/*NEC.CollectSolData();
 		AC.CollectSolData();
 		HEL.CollectSolData(); //*/
 
 		//CY.CollectSolData();
-		ADH.CollectSolData();
+		/*ADH.CollectSolData();
 
 		LM.CollectSolData();
 		LN.CollectSolData();
@@ -85,36 +84,36 @@ RETURN_TYPE ISolver<Method>::
 
 		T0s.clear();
 
-		NEC.GetInitialData(Mthd.X_init.tj, Mthd.X_init.nec); T0s.emplace_back(Mthd.X_init.tj);
-		AC.GetInitialData(Mthd.X_init.tj, Mthd.X_init.acu_c);  T0s.emplace_back(Mthd.X_init.tj);
-		HEL.GetInitialData(Mthd.X_init.tj, Mthd.X_init.hel);  T0s.emplace_back(Mthd.X_init.tj);
+		NEC.SetInitialData(Mthd.X_init.tj, Mthd.X_init.nec); T0s.emplace_back(Mthd.X_init.tj);
+		AC.SetInitialData(Mthd.X_init.tj, Mthd.X_init.acu_c);  T0s.emplace_back(Mthd.X_init.tj);
+		HEL.SetInitialData(Mthd.X_init.tj, Mthd.X_init.hel);  T0s.emplace_back(Mthd.X_init.tj);
 
-		CY.GetInitialData(Mthd.X_init.tj, Mthd.X_init.cy);  T0s.emplace_back(Mthd.X_init.tj);
-		ADH.GetInitialData(Mthd.X_init.tj, Mthd.X_init.adh);  T0s.emplace_back(Mthd.X_init.tj);
+		CY.SetInitialData(Mthd.X_init.tj, Mthd.X_init.cy);  T0s.emplace_back(Mthd.X_init.tj);
+		ADH.SetInitialData(Mthd.X_init.tj, Mthd.X_init.adh);  T0s.emplace_back(Mthd.X_init.tj);
 
-		LM.GetInitialData(Mthd.X_init.tj, Mthd.X_init.lm);  T0s.emplace_back(Mthd.X_init.tj);
-		LN.GetInitialData(Mthd.X_init.tj, Mthd.X_init.ln);  T0s.emplace_back(Mthd.X_init.tj);
+		LM.SetInitialData(Mthd.X_init.tj, Mthd.X_init.lm);  T0s.emplace_back(Mthd.X_init.tj);
+		LN.SetInitialData(Mthd.X_init.tj, Mthd.X_init.ln);  T0s.emplace_back(Mthd.X_init.tj);
 
-		MIA.GetInitialData(Mthd.X_init.tj, Mthd.X_init.mia);  T0s.emplace_back(Mthd.X_init.tj);
-		MII.GetInitialData(Mthd.X_init.tj, Mthd.X_init.mii);  T0s.emplace_back(Mthd.X_init.tj);
+		MIA.SetInitialData(Mthd.X_init.tj, Mthd.X_init.mia);  T0s.emplace_back(Mthd.X_init.tj);
+		MII.SetInitialData(Mthd.X_init.tj, Mthd.X_init.mii);  T0s.emplace_back(Mthd.X_init.tj);
 	}
 
 	T_Func(void)SetIniDataFromOutside(vector<float_t>& T0s) {
 
 		T0s.clear();
 
-		NEC.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.nec);  T0s.emplace_back(Mthd.X_init.tj);
-		AC.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.acu_c); T0s.emplace_back(Mthd.X_init.tj);
-		HEL.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.hel); T0s.emplace_back(Mthd.X_init.tj);
+		NEC.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.nec);  T0s.emplace_back(Mthd.X_init.tj);
+		AC.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.acu_c); T0s.emplace_back(Mthd.X_init.tj);
+		HEL.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.hel); T0s.emplace_back(Mthd.X_init.tj);
 
-		CY.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.cy); T0s.emplace_back(Mthd.X_init.tj);
-		ADH.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.adh); T0s.emplace_back(Mthd.X_init.tj);
+		CY.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.cy); T0s.emplace_back(Mthd.X_init.tj);
+		ADH.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.adh); T0s.emplace_back(Mthd.X_init.tj);
 
-		LM.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.lm); T0s.emplace_back(Mthd.X_init.tj);
-		LN.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.ln); T0s.emplace_back(Mthd.X_init.tj);
+		LM.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.lm); T0s.emplace_back(Mthd.X_init.tj);
+		LN.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.ln); T0s.emplace_back(Mthd.X_init.tj);
 
-		MIA.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.mia); T0s.emplace_back(Mthd.X_init.tj);
-		MII.GetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.mii); T0s.emplace_back(Mthd.X_init.tj);
+		MIA.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.mia); T0s.emplace_back(Mthd.X_init.tj);
+		MII.SetInitialDataFromOutside(Mthd.X_init.tj, Mthd.X_init.mii); T0s.emplace_back(Mthd.X_init.tj);
 	}
 
 	T_Func(void)InitialiseRetArrays() {
@@ -127,12 +126,12 @@ RETURN_TYPE ISolver<Method>::
 
 	T_Func(void)AssignSolData(uint16_t gap, uint32_t Nj, variables& X) {
 
-		X.nec = NEC.GetSolData(gap, Nj, Mthd.N);
+		/*X.nec = NEC.GetSolData(gap, Nj, Mthd.N);
 		X.acu_c = AC.GetSolData(gap, Nj, Mthd.N);
 		X.hel = HEL.GetSolData(gap, Nj, Mthd.N); //*/
 
 		//X.cy = CY.GetSolData(gap, Nj, Mthd.N);
-		X.adh = ADH.GetSolData(gap, Nj, Mthd.N);
+		/*X.adh = ADH.GetSolData(gap, Nj, Mthd.N);
 
 		X.lm = LM.GetSolData(gap, Nj, Mthd.N);
 		X.ln = LN.GetSolData(gap, Nj, Mthd.N);
@@ -252,73 +251,21 @@ RETURN_TYPE ISolver<Method>::
 
 		void ApplyMethod() final {
 
-			/*Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_prev.nec, NEC.RP);
+			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_prev.nec, NEC.RP);
 			Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_prev.acu_c, AC.RP);
 			Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_prev.hel, HEL.RP);//*/
 
 			Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_prev.cy, CY.RP);
-			/*Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_prev.adh, ADH.RP);
+			Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_prev.adh, ADH.RP);
 
 			Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_prev.lm, LM.RP);
 			Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_prev.ln, LN.RP);
 
 			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_prev.mia, MIA.RP);
-			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_prev.mii, MII.RP);//*/
+			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_prev.mii, MII.RP);// */
 
 			ExpressSubValues(Mthd.X_pred);// */
 		}
-
-		void AplMethod(size_t Ni) final {
-
-#define ToReplicateOrToSolve(NUM, MEMBER, VAL)\
-	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
-	else AplMeth[NUM]()
-
-			ToReplicateOrToSolve(0, NEC, nec);
-			ToReplicateOrToSolve(1, AC, acu_c);
-			ToReplicateOrToSolve(2, HEL, hel);
-
-			ToReplicateOrToSolve(3, CY, cy);
-			ToReplicateOrToSolve(4, ADH, adh);
-			
-			ToReplicateOrToSolve(5, LM, lm);
-			ToReplicateOrToSolve(6, LN, ln);
-
-			ToReplicateOrToSolve(7, MIA, mia);
-			ToReplicateOrToSolve(8, MII, mii);
-
-#undef ToReplicateOrToSolve
-
-#define ToReplicateOrToGetReal(NUM, MEMBER, VAL)\
-	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
-	else SubValAssigner[NUM](Mthd.X_pred)
-
-			ToReplicateOrToGetReal(0, DF, d_F);
-			ToReplicateOrToGetReal(1, DP_A, dp_A);
-			ToReplicateOrToGetReal(2, DP_N, dp_N);
-			ToReplicateOrToGetReal(3, EPS_S, eps_s);
-			ToReplicateOrToGetReal(4, EPS_W, eps_w);
-
-#undef ToReplicateOrToGetReal
-		}
-
-
-	private:
-		std::array<std::function<void()>, 9> AplMeth = {
-			[&]() -> void { Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_prev.nec, NEC.RP); },
-			[&]() -> void { Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_prev.acu_c, AC.RP); },
-			[&]() -> void { Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_prev.hel, HEL.RP); },
-
-			[&]() -> void { Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_prev.cy, CY.RP); },
-			[&]() -> void { Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_prev.adh, ADH.RP); },
-
-			[&]() -> void { Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_prev.lm , LM.RP); },
-			[&]() -> void { Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_prev.ln , LN.RP); },
-
-			[&]() -> void { Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_prev.mia , MIA.RP); },
-			[&]() -> void { Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_prev.mii , MII.RP); }
-		};
-
 
 	};
 
@@ -349,74 +296,6 @@ RETURN_TYPE ISolver<Method>::
 			ExpressSubValues(Mthd.X_cor);
 		}
 
-		void AplMethod(size_t Ni) final {
-
-#define ToReplicateOrToSolve(NUM, MEMBER, VAL)\
-	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
-	else PredAssigner[NUM]()
-
-			ToReplicateOrToSolve(0, NEC, nec);
-			ToReplicateOrToSolve(1, AC, acu_c);
-			ToReplicateOrToSolve(2, HEL, hel);
-
-			ToReplicateOrToSolve(3, CY, cy);
-			ToReplicateOrToSolve(4, ADH, adh);
-
-			ToReplicateOrToSolve(5, LM, lm);
-			ToReplicateOrToSolve(6, LN, ln);
-
-			ToReplicateOrToSolve(7, MIA, mia);
-			ToReplicateOrToSolve(8, MII, mii);
-#undef ToReplicateOrToSolve
-
-#define ToReplicateOrToGetReal(NUM, MEMBER, VAL)\
-	if (MEMBER.ToReplicateOrNot(Ni, Mthd.X_pred.VAL)){}\
-	else SubValAssigner[NUM](Mthd.X_pred)
-
-			ToReplicateOrToGetReal(0, DF, d_F);
-			ToReplicateOrToGetReal(1, DP_A, dp_A);
-			ToReplicateOrToGetReal(2, DP_N, dp_N);
-			ToReplicateOrToGetReal(3, EPS_S, eps_s);
-			ToReplicateOrToGetReal(4, EPS_W, eps_w);
-
-#undef ToReplicateOrToGetReal
-
-			Mthd.X_cor.tj = Mthd.X_pred.tj;
-			Mthd.X_cor.ret = Mthd.X_pred.ret;
-
-#define ToReplicateOrToSolve(NUM, STEP, MEMBER, VAL)\
-	if (MEMBER.isCurrentlyPreSolved){}\
-	else CorAssigner[NUM]()
-
-			ToReplicateOrToSolve(0, Ni, NEC, nec);
-			ToReplicateOrToSolve(1, Ni, AC, acu_c);
-			ToReplicateOrToSolve(2, Ni, HEL, hel);
-
-			ToReplicateOrToSolve(3, Ni, CY, cy);
-			ToReplicateOrToSolve(4, Ni, ADH, adh);
-
-			ToReplicateOrToSolve(5, Ni, LM, lm);
-			ToReplicateOrToSolve(6, Ni, LN, ln);
-
-			ToReplicateOrToSolve(7, Ni, MIA, mia);
-			ToReplicateOrToSolve(8, Ni, MII, mii);
-#undef ToReplicateOrToSolve
-
-#define ToReplicateOrToGetReal(NUM, MEMBER, VAL)\
-	if (MEMBER.isCurrentlyPreSolved){}\
-	else SubValAssigner[NUM](Mthd.X_cor)
-
-			ToReplicateOrToGetReal(0, DF, d_F);
-			ToReplicateOrToGetReal(1, DP_A, dp_A);
-			ToReplicateOrToGetReal(2, DP_N, dp_N);
-			ToReplicateOrToGetReal(3, EPS_S, eps_s);
-			ToReplicateOrToGetReal(4, EPS_W, eps_w);
-
-#undef ToReplicateOrToGetReal
-
-
-		}
-
 		
 
 	private:
@@ -436,38 +315,6 @@ RETURN_TYPE ISolver<Method>::
 
 			ExpressSubValues(Mthd.X_pred);// */
 		}
-
-		std::array<std::function<void()>, 9> PredAssigner = {
-			[&]() -> void {	Mthd.X_cor.nec = Mthd.Corrector(Mthd.X_prev.nec, NEC.RP); },
-			[&]() -> void { Mthd.X_cor.acu_c = Mthd.Corrector(Mthd.X_prev.acu_c, AC.RP); },
-			[&]() -> void { Mthd.X_cor.hel = Mthd.Corrector(Mthd.X_prev.hel, HEL.RP); },
-
-			[&]() -> void { Mthd.X_cor.cy = Mthd.Corrector(Mthd.X_prev.cy, CY.RP); },
-			[&]() -> void { Mthd.X_cor.adh = Mthd.Corrector(Mthd.X_prev.adh, ADH.RP); },
-
-			[&]() -> void { Mthd.X_cor.lm = Mthd.Corrector(Mthd.X_prev.lm, LM.RP); },
-			[&]() -> void { Mthd.X_cor.ln = Mthd.Corrector(Mthd.X_prev.ln, LN.RP); },
-
-			[&]() -> void { Mthd.X_cor.mia = Mthd.Corrector(Mthd.X_prev.mia, MIA.RP); },
-			[&]() -> void { Mthd.X_cor.mii = Mthd.Corrector(Mthd.X_prev.mii, MII.RP); },
-		};
-		
-		std::array<std::function<void()>, 9> CorAssigner = {
-
-			[&]() -> void {Mthd.X_cor.nec = Mthd.Corrector(Mthd.X_prev.nec, NEC.RP); },
-			[&]() -> void {Mthd.X_cor.acu_c = Mthd.Corrector(Mthd.X_prev.acu_c, AC.RP); },
-			[&]() -> void {Mthd.X_cor.hel = Mthd.Corrector(Mthd.X_prev.hel, HEL.RP); },
-
-			[&]() -> void {Mthd.X_cor.cy = Mthd.Corrector(Mthd.X_prev.cy, CY.RP); },
-			[&]() -> void {Mthd.X_cor.adh = Mthd.Corrector(Mthd.X_prev.adh, ADH.RP);},
-
-			[&]() -> void {Mthd.X_cor.lm = Mthd.Corrector(Mthd.X_prev.lm, LM.RP);},
-			[&]() -> void {Mthd.X_cor.ln = Mthd.Corrector(Mthd.X_prev.ln, LN.RP);},
-
-			[&]() -> void {Mthd.X_cor.mia = Mthd.Corrector(Mthd.X_prev.mia, MIA.RP);},
-			[&]() -> void {Mthd.X_cor.mii = Mthd.Corrector(Mthd.X_prev.mii, MII.RP);}
-		};
-
 
 
 	};
@@ -494,22 +341,6 @@ RETURN_TYPE ISolver<Method>::
 
 			ExpressSubValues(Mthd.X_pred); // */
 		}
-	private:
-	
-		std::array<std::function<void()>, 9> AplMeth = {
-			[&]() -> void {Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP); },
-			[&]() -> void {	Mthd.X_pred.acu_c = Mthd.Predictor(Mthd.X_sub.acu_c, Mthd.X_prev.acu_c, AC.RP); },
-			[&]() -> void {	Mthd.X_pred.hel = Mthd.Predictor(Mthd.X_sub.hel, Mthd.X_prev.hel, HEL.RP); },
-
-			[&]() -> void {	Mthd.X_pred.cy = Mthd.Predictor(Mthd.X_sub.cy, Mthd.X_prev.cy, CY.RP); },
-			[&]() -> void {	Mthd.X_pred.adh = Mthd.Predictor(Mthd.X_sub.adh, Mthd.X_prev.adh, ADH.RP); },
-
-			[&]() -> void {	Mthd.X_pred.lm = Mthd.Predictor(Mthd.X_sub.lm, Mthd.X_prev.lm, LM.RP); },
-			[&]() -> void {	Mthd.X_pred.ln = Mthd.Predictor(Mthd.X_sub.ln, Mthd.X_prev.ln, LN.RP); },
-
-			[&]() -> void {	Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP); },
-			[&]() -> void {	Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP); }
-		};
 
 	};
 
@@ -569,8 +400,6 @@ RETURN_TYPE ISolver<Method>::
 			Mthd.X_cor.mia = Mthd.Corrector(Mthd.X[1].mia, Mthd.X[2].mia, Mthd.X[3].mia, Mthd.X_prev.mia, MIA.RP);
 			Mthd.X_cor.mii = Mthd.Corrector(Mthd.X[1].mii, Mthd.X[2].mii, Mthd.X[3].mii, Mthd.X_prev.mii, MII.RP);
 
-			//Mthd.X_cor.ret = Mthd.X_pred.ret; // in case of emergency to update ret-values on X_cor, but what no earth for
-
 			ExpressSubValues(Mthd.X_cor);
 		}
 
@@ -612,7 +441,7 @@ RETURN_TYPE ISolver<Method>::
 			Mthd.X_pred.mia = Mthd.Predictor(Mthd.X_sub.mia, Mthd.X_prev.mia, MIA.RP);
 			Mthd.X_pred.mii = Mthd.Predictor(Mthd.X_sub.mii, Mthd.X_prev.mii, MII.RP);
 
-			ExpressSubValues(Mthd.X_pred);// */
+			ExpressSubValues(Mthd.X_pred); // */
 		}
 	};
 
@@ -715,8 +544,7 @@ RETURN_TYPE ISolver<Method>::
 			ExpressSubValues(Mthd.X_pred);// */
 		}
 
-		void ApplyPrepMethod() final
-		{
+		void ApplyPrepMethod() final {
 			Mthd.X_sub = Mthd.X_prev;
 
 			Mthd.X_pred.nec = Mthd.Predictor(Mthd.X_sub.nec, Mthd.X_prev.nec, NEC.RP);

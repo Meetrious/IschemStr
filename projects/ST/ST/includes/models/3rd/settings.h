@@ -1,3 +1,7 @@
+/* This header implements the IMember interface for 3rd-model ODE_system members
+
+M_ODE stands for ODE_MEMBER */
+
 #pragma once
 #include <models/3rd/equations.h>
 #include <base/Settings_base.h>
@@ -46,7 +50,7 @@ namespace StraightTask
 	{
 		namespace Pro_Inflam
 		{
-			class M_ODE : public ISysMember<Equation>{
+			class M_ODE : public ISysMember<Equation> {
 				const char* sol_name()noexcept final { return "Cy"; };
 				const char* ini_spl_name() final { return "cyto4SPL"; }
 			public:
@@ -57,14 +61,14 @@ namespace StraightTask
 
 	namespace Adhesion
 	{
-		class M_ODE : public ISysMember<Equation>{
+		class M_ODE : public ISysMember<Equation> {
 			const char* sol_name()noexcept final { return "Adhes"; };
 		};
 	}
 
 	namespace LeuMacrophags
 	{
-		class M_ODE : public ISysMember<Equation>{
+		class M_ODE : public ISysMember<Equation> {
 			const char* sol_name()noexcept final { return "Lm"; };
 			const char* ini_spl_name() final { return "lm4SPL"; }
 		public:
@@ -74,7 +78,7 @@ namespace StraightTask
 
 	namespace LeuNeutrophils
 	{
-		class M_ODE : public ISysMember<Equation>{
+		class M_ODE : public ISysMember<Equation> {
 			const char* sol_name()noexcept final { return "Ln"; };
 			const char* ini_spl_name() final { return "ln4SPL"; }
 		public:
@@ -86,13 +90,13 @@ namespace StraightTask
 	{
 		namespace Active
 		{
-			class M_ODE : public ISysMember<Equation>{
+			class M_ODE : public ISysMember<Equation> {
 				const char* sol_name()noexcept final { return "Mi_active"; };
 			};
 		}
 		namespace Inactive
 		{
-			class M_ODE : public ISysMember<Equation>	{
+			class M_ODE : public ISysMember<Equation> {
 				const char* sol_name()noexcept final { return "Mi_inactive"; };
 			};
 		}
@@ -105,8 +109,7 @@ namespace StraightTask
 	{
 		namespace Full
 		{
-			class M_Sub : public ISubMember<SubVal>
-			{
+			class M_Sub : public ISubMember<SubVal>	{
 			public:
 				const char* sol_name()noexcept final { return "D_Full"; }
 				M_Sub() {}
@@ -114,16 +117,14 @@ namespace StraightTask
 		}
 		namespace Nec_partial
 		{
-			class M_Sub : public ISubMember<SubVal>
-			{
+			class M_Sub : public ISubMember<SubVal> {
 			public:
 				const char* sol_name()noexcept final { return "DN_c"; }
 			};
 		}
 		namespace Apop_partial
 		{
-			class M_Sub : public ISubMember<SubVal>
-			{
+			class M_Sub : public ISubMember<SubVal> {
 			public:
 				const char* sol_name()noexcept final { return "DA_c"; }
 			};
@@ -134,8 +135,7 @@ namespace StraightTask
 	{
 		namespace Strong
 		{
-			class M_Sub : public ISubMember<SubVal>
-			{
+			class M_Sub : public ISubMember<SubVal>	{
 			public:
 				const char* sol_name()noexcept final { return "Eps_s"; }
 			};
@@ -143,8 +143,7 @@ namespace StraightTask
 
 		namespace Weak
 		{
-			class M_Sub : public ISubMember<SubVal>
-			{
+			class M_Sub : public ISubMember<SubVal>	{
 			public:
 				const char* sol_name()noexcept final { return "Eps_w"; }
 			};

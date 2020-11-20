@@ -1,6 +1,9 @@
+/* This header constains the right parts for equations from 3rd-model ODE_system //*/
+
 #pragma once
 #include <models/3rd/variables.h>
 #include <base/Eq_base.h>
+
 #include <cmath>
 
 
@@ -90,10 +93,15 @@ namespace StraightTask
 		// chemotaxis
 		//static double_t p_Mach = 4.5, C_Ma = 0.4, p_Lmch = 4.5, C_Lm = 0.18, e_ch = 0.18;
 		static double_t C_Ma = 9.9713, C_Lm = 0.18;
+		
 		// ordinal
 		//static double_t p_Macy = 2.9481, p_Lmcy = 5.6667, p_Lncy = 8.2513, C_Ln = 3.3918, e_cy = 5.577, l1 = 0.75752, l2 = 5.1694, l3 = 1.3089, _A = 0.14514;
 		static double_t p_Macy = 3.7386, p_Lmcy = 4.9559, p_Lncy = 6.2865, C_Ln = 3.3918,
-			e_cy = 1.166, l1 = 0.75752, l2 = 5.1694, l3 = 1.3089, _A = 0.014514;
+			e_cy = 1.166, l1 = 0.75752, l2 = 5.1694, l3 = 1.3089, _A = 0.014514; // */
+		
+		/*static double_t p_Macy = 0.0599523, C_Ma = 6.3631, p_Lmcy = 4.85738, C_Lm = 7.64509,
+			p_Lncy = 8.35855, C_Ln = 0.742021,	e_cy = 4.24879, l1 = 6.4429, l2 = 6.47516,
+			l3 = 1.16152, _A = 0.492307;// */
 
 		namespace Pro_Inflam
 		{
