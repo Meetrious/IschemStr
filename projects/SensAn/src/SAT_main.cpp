@@ -9,7 +9,7 @@ int main() {
 
 	Task.SolveForOutput();
 
-	Task.STM.SolveAndOutput(1500, 24.0, 4);
+	//Task.STM.SolveAndOutput(1500, 24.0, 4);
 
 	return EXIT_SUCCESS;
 }
