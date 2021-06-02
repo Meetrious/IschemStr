@@ -819,13 +819,8 @@ namespace ReverseTask
 				for (size_t IDN = 0; IDN < amount_of_threads; IDN++) {
 					Workers[IDN].thr.join();
 					
-				} // */
+				}
 
-				
-#ifdef _DEBUG
-					// outputs current progress
-					CoutProgress(cind, Population.size());
-#endif
 			
 
 				// 2. Sorting vector container in ascending order of F_values

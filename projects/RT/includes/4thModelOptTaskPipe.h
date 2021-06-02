@@ -1,6 +1,8 @@
 #pragma once
 #include <4thModelPipe.h>
 
+#include <base/RT_exceptions.h>
+
 #include <base/Aberration_base.h>
 
 namespace ReverseTask
@@ -10,10 +12,10 @@ namespace ReverseTask
 
 		IAggregateControls(const char* defaultname = "mem") :
 			NEC("N"),
-			AC("AC")// */
+			AC("AC"),// */
 			
-			//CY("CY"),
-			//LN("Ln"),
+			CY("CY"),
+			LN("Ln")
 			//LM("LM") 
 		{}
 		~IAggregateControls() = default;
@@ -24,8 +26,8 @@ namespace ReverseTask
 		void GatherData() {
 			AC.GatherData(input_dir + "preserved_solution/2/Ac_ch.txt");
 			NEC.GatherData(input_dir + "preserved_solution/2/Necr.txt");
-			//CY.GatherData(input_dir + "preserved_solution/2/Cy.txt");
-			//LN.GatherData(input_dir + "preserved_solution/2/Ln.txt");
+			CY.GatherData(input_dir + "preserved_solution/2/Cy.txt");
+			LN.GatherData(input_dir + "preserved_solution/2/Ln.txt");
 			//LM.GatherData(input_dir + "preserved_solution/2/Lm.txt");// */
 		}
 
@@ -39,9 +41,9 @@ namespace ReverseTask
 			AC.CollectCalc(Nj, gap, N, X_sol.acu_c);
 			NEC.CollectCalc(Nj, gap, N, X_sol.nec); // */
 
-			//CY.CollectCalc(Nj, gap, N, X_sol.cy);
+			CY.CollectCalc(Nj, gap, N, X_sol.cy);
 			
-			//LN.CollectCalc(Nj, gap, N, X_sol.ln);
+			LN.CollectCalc(Nj, gap, N, X_sol.ln);
 			//LM.CollectCalc(Nj, gap, N, X_sol.lm);// */
 		}
 
@@ -56,8 +58,8 @@ namespace ReverseTask
 			full_result += NEC.CountResult();
 			full_result += AC.CountResult(); // */
 
-			//full_result += CY.CountResult();
-			//full_result += LN.CountResult();
+			full_result += CY.CountResult();
+			full_result += LN.CountResult();
 			//full_result += LM.CountResult();// */
 		}
 
@@ -66,9 +68,9 @@ namespace ReverseTask
 			AC.ResetState();
 			NEC.ResetState(); // */
 
-			//CY.ResetState();
+			CY.ResetState();
 			
-			//LN.ResetState();
+			LN.ResetState();
 			//LM.ResetState();// */
 		}
 
@@ -79,8 +81,8 @@ namespace ReverseTask
 		Continuous AC; // */
 		//Continuous HEL;
 
-		//Continuous CY;
-		//Continuous LN;
+		Continuous CY;
+		Continuous LN;
 		//Continuous LM;// */
 	};
 }
@@ -89,74 +91,56 @@ namespace ReverseTask
 
 #include <base/BGA_Base.h>
 
+
 namespace ReverseTask
 {
 	namespace BGA
 	{
-		size_t Parameters::SetCTVlist() {
-#define CONF_COEFS(NUM, EQ_BLOCK, NAME, ID, L, R) \
-			CoefsToVariate[NUM] = std::make_pair(NAME, &StraightTask::EQ_BLOCK::ID);\
-			bounds[0].emplace_back(L); bounds[1].emplace_back(R)
+		template <typename ST_Method>
+		size_t Task<ST_Method>::SetCVlist() {
 
-			CONF_COEFS(0, Neurons, "c_A", c_A, 6e-3, 1.0);
-			CONF_COEFS(1, Neurons, "q_{A_n}", q_A_n, 2e-1, 2);
-			CONF_COEFS(2, Neurons, "q_{ep_N}", q_epN, 5e-2, 0.7);
-			CONF_COEFS(3, Neurons, "l_1", l1, 0.5, 3.0);
-			//CONF_COEFS(4, ToxDamage, "D_0", D_0, 1e-3, 0.1);// */
+#define CONF_COEFS(NUM, COEF_PACK_NAME, COEF_NAME, L, R) \
+			for (auto & Worker: Workers) { \
+				Worker.CoefsToVariate[NUM] = &Worker.STM.COEF_PACK_NAME.COEF_NAME; \
+			}\
+			bounds[0].emplace_back(L);\
+ 			bounds[1].emplace_back(R)
 
-		/*	CONF_COEFS(0, Neurons, "q_N", q_N, 1e-3, 2);
-			CONF_COEFS(1, Neurons, "q_{A_n}", q_A_n, 2e-1, 2);
-			CONF_COEFS(2, Neurons, "c_H", c_H, 1e-3, 1);
-		
-			CONF_COEFS(5, Neurons, "q_{ep_A}", q_epA, 1e-1, 0.7);
-			CONF_COEFS(6, Neurons, "q_A", q_A, 0.5, 1.5);
-			CONF_COEFS(7, Neurons, "c_{A_h}", c_A_h, 1e-3, 0.5);
-			CONF_COEFS(8, Neurons, "q_H", q_H, 7.0, 9.0);
+			CONF_COEFS(0, NEUR_C, q_N, 0.02, 4.0);
+			CONF_COEFS(1, NEUR_C, q_A_n, 6e-2, 4.0);
+			CONF_COEFS(2, NEUR_C, c_H, 2e-3, 5.0);
+			CONF_COEFS(3, NEUR_C, c_A, 1e-2, 3.0);
+			CONF_COEFS(4, NEUR_C, q_epN, 2e-3, 1.5);
+			CONF_COEFS(5, NEUR_C, q_epA, 1e-1, 1.0);
+			//CONF_COEFS(6, NEUR_C, q_A, 6e-1, 4.0);
+			//CONF_COEFS(7, NEUR_C, c_A_h, 1e-3, 3.0);
+			//CONF_COEFS(8, NEUR_C, p_r, 2e-2, 2.0);
+			CONF_COEFS(6, NEUR_C, q_H, 7.0, 16.0);
+			//CONF_COEFS(7, NEUR_C, l1, 0.5, 4.0); // */
 			
+			//CONF_COEFS(7, LN_C, c_Ln, 1e-3, 1.5);
+			CONF_COEFS(7, LN_C, d_Ln, 10.0, 16.0);
+			CONF_COEFS(8, LN_C, c_dLn1, 1.0, 6.0);
+			CONF_COEFS(9, LN_C, K_Ln1, 4.5, 9.0);
+			//CONF_COEFS(11, LN_C, l1, 0.5, 3.0);
 
+			CONF_COEFS(10, CYTO_C, p_Macy, 1e-2, 1.0);
+			CONF_COEFS(11, CYTO_C, C_Ma, 2.0, 8.0);
+			//CONF_COEFS(7, CYTO_C, l1, 1.0, 6.0);
+			CONF_COEFS(12, CYTO_C, _A, 3e-3, 0.5);
+			CONF_COEFS(13, CYTO_C, p_Lmcy, 3.0, 8.0);
+			CONF_COEFS(14, CYTO_C, C_Lm, 1.0, 6.0);
+			//CONF_COEFS(11, CYTO_C, l2, 1.0, 5.0);
+			CONF_COEFS(15, CYTO_C, p_Lncy, 6.5, 11.0);
+			CONF_COEFS(16, CYTO_C, C_Ln, 1e-2, 2.0);
+			//CONF_COEFS(14, CYTO_C, l3, 1.0, 5.0);
+			CONF_COEFS(17, CYTO_C, e_cy, 1.0, 4.0);// */
 
-			/*CONF_COEFS(0, Cytokines, "p_{Ma_{cy}}", p_Macy, 5.0, 8.0);
-			CONF_COEFS(1, Cytokines, "C_{Ma}", C_Ma, 4.0, 5.5);
-
-			CONF_COEFS(2, Cytokines, "p_{Lm_{cy}}", p_Lmcy, 6.7, 9.2);
-			CONF_COEFS(3, Cytokines, "C_{Lm}", C_Lm, 80.0, 110.0);
-
-			CONF_COEFS(4, Cytokines, "p_{Ln_{cy}}", p_Lncy, 5.5, 7.5);
-			CONF_COEFS(5, Cytokines, "C_{Ln}", C_Ln, 1e-3, 1.0);
-
-			CONF_COEFS(6, Cytokines, "e_{cy}", e_cy, 2.5, 6.0);*/
-
-			//CONF_COEFS(7, Cytokines, "A_{btm}", _A, 1e-3, 10.0);
-			
-			/*CONF_COEFS(13, Cytokines, "l_1", l1, 0.5, 10.0);
-			CONF_COEFS(14, Cytokines, "l_2", l2, 0.5, 10.0);
-			CONF_COEFS(15, Cytokines, "l_3", l3, 0.5, 10.0);// */
-
-			
-
-			/*CONF_COEFS(7, Adhesion, "o_{cy_1}", o_cy_1, 0.003, 1.7);
-			CONF_COEFS(8, Adhesion, "o_{cy_2}", o_cy_2, 0.003, 1.5);
-			CONF_COEFS(9, Adhesion, "e_{adh}", e_adh, 0.003, 1.2);// */
-
-			/*CONF_COEFS(0, LeuNeutrophils, "c_{Ln}", c_Ln, 0.03, 30.0);
-			CONF_COEFS(1, LeuNeutrophils, "d_{Ln}", d_Ln, 0.03, 30.0);
-			CONF_COEFS(2, LeuNeutrophils, "c_{d_{Lm_1}}", c_dLn1, 0.03, 30.0);
-			CONF_COEFS(3, LeuNeutrophils, "K_{Ln_1}", K_Ln1, 0.03, 30.0);
-			CONF_COEFS(4, LeuNeutrophils, "c_{d_{Ln_2}}", c_dLn2, 0.03, 30.0);
-			CONF_COEFS(5, LeuNeutrophils, "K_{Ln_2}", K_Ln2, 0.03, 30.0); // */
-
-
-			/*CONF_COEFS(0, LeuMacrophags, "c_{Lm}", c_Lm, 0.005, 10.0);
-			CONF_COEFS(1, LeuMacrophags, "c_{d_{Lm}}", c_dLm, 0.5, 10.0);
-			CONF_COEFS(2, LeuMacrophags, "K_{Lm}", K_Lm, 0.003, 10.0);
-			CONF_COEFS(3, LeuMacrophags, "d_{Lm}", d_Lm, 0.003, 10.0);
-			CONF_COEFS(4, LeuMacrophags, "l_{1}", l1, 4.0, 15.0); //*/
-
-
-			
-
-			/*CONF_COEFS(14, ToxDamage, "p_q1", p_q1, 1e-3, 2);
-			CONF_COEFS(15, ToxDamage, "c_q1", c_q1, 5, 15);*/
+			/*CONF_COEFS(19, LM_C, c_Lm, 0.1, 3.0);
+			CONF_COEFS(20, LM_C, c_dLm, 3.0, 7.0);
+			CONF_COEFS(18, LM_C, K_Lm, 5.0, 15.0);
+			CONF_COEFS(19, LM_C, d_Lm, 1e-2, 1.0); // */
+			//CONF_COEFS(20, LM_C, l1, 1.0, 5.0);
 
 
 #undef CONF_COEFS
@@ -164,8 +148,9 @@ namespace ReverseTask
 			/* we return the number of the last defined coefficient setter;
 			* it is rather an individual process and each time is to be set by hand */
 			return bounds[0].size() - 1;
-		}
-		
+
+
+		}		
 	}
 }
 
