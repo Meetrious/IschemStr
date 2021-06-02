@@ -1,0 +1,169 @@
+	
+
+		BGA_Parameters() : StraightTask::Parameters(1, 1500) // sce, FAOD, GridNum
+		{
+			p_0 = 7000;
+			p = 500;
+			SortFraction = (int)((p * 30) / 100);
+			RecombPar = 0.1;
+			MutPar = 0.0012;
+			iterAmount = 300;
+			eps = 0;// 1.0e-5;
+
+			ControlValues = { NEC, HEL };
+			ControlValues.shrink_to_fit();
+		}
+	
+	void BGA_Parameters::SetCoefsForChange()
+	{
+		if (CoefsForChange.size() != 0) return; // нельзя допустить повторной инициализации!!!
+
+#define CONF_COEFS(NUM, STRUCT, NAME, ID, L, R) BGA_Parameters::\
+			CoefsForChange.emplace_back( std::make_pair(NAME, &StraightTask::STRUCT::ID));\
+			bonds[0].emplace_back(L); bonds[1].emplace_back(R);
+	
+			CONF_COEFS(0, Neurons, "k_N", k_N, 0.03, 5.0)
+			CONF_COEFS(1, Neurons, "k_A", k_A, 1.0, 4.0)
+			CONF_COEFS(2, Neurons, "p_R", p_R, 0.03, 4.0)
+
+			CONF_COEFS(3, ToxDamage, "p_{ncy}", p_ncy, 14.0, 22.0)
+			CONF_COEFS(4, ToxDamage, "C_{Dcy}", C_Dcy, 4.0, 13.0)
+			CONF_COEFS(5, ToxDamage, "C_{DLn}", C_DLn, 15.0, 55.0)
+			CONF_COEFS(6, ToxDamage, "C_{DLm}", C_DLm, 4.0, 15.0)
+			CONF_COEFS(7, ToxDamage, "P_{nn}", P_nn, 1.0, 6.0)
+			CONF_COEFS(8, ToxDamage, "p_{Lm}", p_Lm, 15.0, 50.0)
+			CONF_COEFS(9, ToxDamage, "p_{Ln}", p_Ln, 20.0, 40.0)
+			CONF_COEFS(10, ToxDamage, "D_0", D_0, 0.03, 3.0)
+			CONF_COEFS(11, ToxDamage, "p_D", p_D, 0.03, 3.0)
+#undef pair_up
+			bonds[0].shrink_to_fit(); bonds[1].shrink_to_fit();
+			CoefsForChange.shrink_to_fit();
+	
+	}
+===============-=-=-=-=========================-=-=-=-==========================
+
+/*1*/		CONF_COEFS(Neurons, "k_N", k_N, 0.03, 5.0)
+/*2*/		CONF_COEFS(Neurons, "k_A", k_A, 1.0, 6.0)
+/*3*/		CONF_COEFS(Neurons, "p_R", p_R, 0.03, 2.0)
+
+/*3*/		CONF_COEFS(ToxDamage, "p_{ncy}", p_ncy, 14.0, 22.0)
+/*4*/		CONF_COEFS(ToxDamage, "C_{Dcy}", C_Dcy, 6.0, 17.0)
+/*5*/		CONF_COEFS(ToxDamage, "C_{DLn}", C_DLn, 30.0, 60.0)
+/*6*/		CONF_COEFS(ToxDamage, "C_{DLm}", C_DLm, 4.0, 15.0)
+/*7*/		CONF_COEFS(ToxDamage, "P_{nn}", P_nn, 1.0, 7.5)
+/*8*/		CONF_COEFS(ToxDamage, "p_{Lm}", p_Lm, 15.0, 36.0)
+/*9*/		CONF_COEFS(ToxDamage, "p_{Ln}", p_Ln, 20.0, 40.0)
+/*10*/		CONF_COEFS(ToxDamage, "D_0", D_0, 0.03, 3.0)
+/*11*/		CONF_COEFS(ToxDamage, "p_D", p_D, 0.03, 1.0)
+#undef pair_up
+
+	======================================================================================================================================
+
+
+
+	void CountFBuds
+	// этот метод призван вычислить значение функционала невязки посредсвом получения численного решения прямой задачи
+	(
+		std::vector<double_t> & buds,
+		std::vector<NumOfDerivative> CVals,
+		StraightTask::Parameters & CurSTP,
+		StraightTask::Methods::PredCor & TL
+	)
+	{
+		using namespace StraightTask;
+
+		// тут инициализируются все начальные условия, все
+		TL.ResetToInitial(CurSTP);
+
+		// контейнер c величинами, которые составляют значение функционала->min
+		for (uint16_t i = 0; i < CVals.size(); i++)
+			buds.emplace_back(0);
+		uint16_t M = 0;
+
+		uint16_t days_remain = CurSTP.FAOD;
+		bool TRIG = true;
+		while (TRIG)
+		{
+			//std::cout << days_remain << " "; // вывод на экран "кол-во дней, которые надо просчитать"
+			TL.X_prev = TL.X_init; // даём начальное условие на предшествующий вектор
+
+			// цикл на следующие 24 часа
+			for (size_t Nj = 1; Nj <= CurSTP.N; Nj++)
+			{
+				// сдвиг на следующий шаг по времени
+				TL.X_pred.tim += CurSTP.H;
+
+				//назначаем соответствующие запаздывания
+				//TLayers.X_pred.AllocCurRets(Nj, CurSTP.N);
+
+				// контролируем промежуток интерполяции
+				TL.X_pred.CheckShiftInterpGap(CurSTP);
+				TL.X_cor = TL.X_pred;
+
+				launchPredCor(TL);
+
+				for (size_t i = 0; i < CVals.size(); i++)
+				{
+					if (buds[i] > 100)
+						buds[i] = 100;
+					else
+						account_investments(CVals[i], buds[i], TL.X_cor); // вычисляем текущий вклад в функционал->min 
+				}
+				M++;
+
+				// сдвигаем запаздывания (если они есть, лол)
+				//rets::ShiftRets(TLayers.X_prev, Nj);
+
+				// обновляем предшествующий временной ряд для перехода на следующий шаг
+				TL.X_prev = TL.X_cor;
+
+			} // конец цикла рассчётов на текущий день for(Nj: 1->N)
+
+			days_remain--; //std::cout << " ; ";
+
+			// Проверка, «а надо ли решать дальше?» 
+			if (days_remain == 0)
+			{
+				//std::cout << "\t\a Finita! \n\n All assigned days were rendered;\n";
+				TRIG = false; // условие на выход из цикла while
+				// else не нужен, ведь если !ID, то внешнее условие while его поймает
+			}
+			else TL.X_init = TL.X_cor;
+		}
+
+		for (uint16_t i = 0; i < CVals.size(); i++)
+			buds[i] /= (double_t)(M) * CVals.size() ; 
+		// умножение на размер массива приближаемых величин нужен для осуществления
+		// поддержания однородности значений F в ситуациях, когда число приближаемых значений меняется
+	}
+
+
+// 12.03.12
+
+CONF_COEFS(0, Cytokines, "p_{Ma_{cy}}", p_Macy, 2.0, 6.0);
+			CONF_COEFS(1, Cytokines, "C_{Ma}", C_Ma, 3.0, 7.0);
+
+			CONF_COEFS(2, Cytokines, "p_{Lm_{cy}}", p_Lmcy, 1.2, 8.8);
+			CONF_COEFS(3, Cytokines, "C_{Lm}", C_Lm, 2.0, 7.5);
+
+			CONF_COEFS(4, Cytokines, "p_{Ln_{cy}}", p_Lncy, 1.2, 3.5);
+			CONF_COEFS(5, Cytokines, "C_{Ln}", C_Ln, 1e-3, 1.0);
+
+			CONF_COEFS(6, Cytokines, "e_{cy}", e_cy, 1.2, 3.0);
+
+			//CONF_COEFS(7, Cytokines, "A_{btm}", _A, 1e-3, 10.0);
+			
+			/*CONF_COEFS(13, Cytokines, "l_1", l1, 0.5, 10.0);
+			CONF_COEFS(14, Cytokines, "l_2", l2, 0.5, 10.0);
+			CONF_COEFS(15, Cytokines, "l_3", l3, 0.5, 10.0);// */
+
+			
+
+			CONF_COEFS(7, Adhesion, "o_{cy_1}", o_cy_1, 1.4, 8.7);
+			CONF_COEFS(8, Adhesion, "o_{cy_2}", o_cy_2, 1.0, 8.5);
+			CONF_COEFS(9, Adhesion, "e_{adh}", e_adh, 0.7, 8.2);
+
+			CONF_COEFS(10, LeuMacrophags, "c_{Lm}", c_Lm, 1.0, 7.0);
+			CONF_COEFS(11, LeuMacrophags, "c_{d_{Lm}}", c_dLm, 0.7, 8.2);
+			CONF_COEFS(12, LeuMacrophags, "K_{Lm}", K_Lm, 1.5, 6.5);
+			CONF_COEFS(13, LeuMacrophags, "d_{Lm}", d_Lm, 1.4, 7.7);
