@@ -8,8 +8,10 @@ set border 3
 
 set grid back lt 0
 set ylabel "Cytokines (cy)"
-plot	'Cy.txt' \
+plot	'd:/Diploma/source/input/preserved_solution/1/Cy.txt' \
 			using 2:3 w lp ps 0.01 lt rgb 'black' title 'solution',\
+		'd:/Diploma/source/input/PreservedSol/CY.txt' \
+			using 2:3 w lp ps 0.007 lt rgb 'brown' title 'V-spline',\
 		'd:/Diploma/source/output/SPL/SPL_CY.txt' \
 			using 1:2 w l dt 2 lc rgb 'brown' title 'spline interpolation (Fouda)',\
 		'd:/Diploma/source/input/exp/cyto4SPL.txt' \
